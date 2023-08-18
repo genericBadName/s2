@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "s2lib",
+  "version": "${version}",
+  "name": "S2lib",
+  "description": "An A* implementation for Minecraft entities.",
+  "authors": [
+    "genericBadName"
+  ],
+  "contact": {},
+  "license": "LGPL-3.0",
+  "icon": "assets/s2lib/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "com.genericbadname.s2lib.client.S2libClient"
+    ],
+    "main": [
+      "com.genericbadname.s2lib.S2lib"
+    ]
+  },
+  "mixins": [
+    "s2lib.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.22",
+    "fabric": "*",
+    "minecraft": "1.19.2"
+  }
+}
