@@ -16,7 +16,7 @@
       "com.genericbadname.s2lib.client.S2libClient"
     ],
     "main": [
-      "com.genericbadname.s2lib.S2lib"
+      "com.genericbadname.s2lib.S2Lib"
     ]
   },
   "mixins": [
