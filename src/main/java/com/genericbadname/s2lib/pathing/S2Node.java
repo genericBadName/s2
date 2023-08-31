@@ -1,5 +1,6 @@
 package com.genericbadname.s2lib.pathing;
 
+import com.genericbadname.s2lib.pathing.movement.Moves;
 import net.minecraft.core.BlockPos;
 
 /**
@@ -9,21 +10,18 @@ public class S2Node {
     private int gCost;
     private int hCost;
     private final BlockPos pos;
+    private final Moves move;
     private S2Node parent;
 
-    public S2Node(BlockPos pos, int gCost, int hCost) {
+    public S2Node(BlockPos pos, Moves move) {
         this.pos = pos;
-        this.gCost = gCost;
-        this.hCost = hCost;
+        this.move = move;
     }
 
-    public S2Node(BlockPos pos) {
-        this.pos = pos;
-    }
-
-    public S2Node(BlockPos pos, S2Node parent) {
+    public S2Node(BlockPos pos, Moves move, S2Node parent) {
         this.pos = pos;
         this.parent = parent;
+        this.move = move;
     }
 
     public BlockPos getPos() {
@@ -44,6 +42,10 @@ public class S2Node {
 
     public S2Node getParent() {
         return parent;
+    }
+
+    public Moves getMove() {
+        return move;
     }
 
     public void setParent(S2Node parent) {

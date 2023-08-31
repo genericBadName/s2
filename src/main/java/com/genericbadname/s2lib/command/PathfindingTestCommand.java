@@ -2,6 +2,7 @@ package com.genericbadname.s2lib.command;
 
 import com.genericbadname.s2lib.S2Lib;
 import com.genericbadname.s2lib.pathing.AStarPathCalculator;
+import com.genericbadname.s2lib.pathing.S2Node;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
@@ -25,8 +26,8 @@ public class PathfindingTestCommand {
         AStarPathCalculator pathfinder = new AStarPathCalculator(start, end, ctx.getLevel());
 
         // loop through path
-        for (BlockPos pos : pathfinder.calculate().getPositions()) {
-            ctx.getLevel().setBlock(pos, Blocks.RED_CONCRETE.defaultBlockState(), 3);
+        for (S2Node pos : pathfinder.calculate().getPositions()) {
+            ctx.getLevel().setBlock(pos.getPos(), Blocks.RED_CONCRETE.defaultBlockState(), 3);
         }
 
         S2Lib.LOGGER.info("done :)");

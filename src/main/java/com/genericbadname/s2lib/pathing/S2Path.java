@@ -7,13 +7,13 @@ import java.util.Objects;
 
 
 public class S2Path {
-    private final List<BlockPos> positions;
+    private final List<S2Node> positions;
 
-    public S2Path(List<BlockPos> positions) {
+    public S2Path(List<S2Node> positions) {
         this.positions = Objects.requireNonNullElseGet(positions, List::of);
     }
 
-    public List<BlockPos> getPositions() {
+    public List<S2Node> getPositions() {
         return positions;
     }
 
