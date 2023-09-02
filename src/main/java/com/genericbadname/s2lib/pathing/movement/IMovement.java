@@ -11,7 +11,5 @@ import java.util.List;
 public interface IMovement {
     void move(Mob mob, BlockPos pos);
 
-    int cost(Mob mob, BlockPos start, BlockPos end);
-
-    List<S2Node> getNeighbors(Level level, BlockPos pos, S2Node parent);
+    double cost(Mob mob, BlockPos start, BlockPos end);
 }

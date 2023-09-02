@@ -1,6 +1,7 @@
 package com.genericbadname.s2lib.example.entity;
 
 import com.genericbadname.s2lib.example.goal.GetToBlockGoal;
+import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Zombie;
@@ -23,6 +24,6 @@ public class ExampleS2Entity extends Zombie {
 
     @Override
     protected void registerGoals() {
-        goalSelector.addGoal(0, new GetToBlockGoal(this, new BlockPos(0, -60, 0)));
+        goalSelector.addGoal(0, new GetToBlockGoal(this, new BetterBlockPos(0, -60, 0)));
     }
 }

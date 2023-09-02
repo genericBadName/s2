@@ -1,5 +1,6 @@
 package com.genericbadname.s2lib.pathing.movement.type;
 
+import com.genericbadname.s2lib.pathing.AStarPathCalculator;
 import com.genericbadname.s2lib.pathing.S2Node;
 import com.genericbadname.s2lib.pathing.movement.IMovement;
 import com.genericbadname.s2lib.pathing.movement.Moves;
@@ -20,20 +21,7 @@ public class CardinalMovement implements IMovement {
     }
 
     @Override
-    public List<S2Node> getNeighbors(Level level, BlockPos pos, S2Node parent) {
-        List<S2Node> directions = List.of(
-                new S2Node(pos.north(), Moves.CARDINAL, parent),
-                new S2Node(pos.south(), Moves.CARDINAL, parent),
-                new S2Node(pos.east(), Moves.CARDINAL, parent),
-                new S2Node(pos.west(), Moves.CARDINAL, parent)
-        );
-
-        // only return walkable areas
-        return directions.stream().filter(node -> !level.getBlockState(node.getPos()).is(Blocks.STONE)).toList();
-    }
-
-    @Override
-    public int cost(Mob mob, BlockPos start, BlockPos end) {
-        return Moves.calculateCost(start, end);
+    public double cost(Mob mob, BlockPos start, BlockPos end) {
+        return start.distSqr(end);
     }
 }

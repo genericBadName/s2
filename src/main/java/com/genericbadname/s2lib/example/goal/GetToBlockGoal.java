@@ -1,6 +1,7 @@
 package com.genericbadname.s2lib.example.goal;
 
 import com.genericbadname.s2lib.pathing.AStarPathCalculator;
+import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.S2Node;
 import com.genericbadname.s2lib.pathing.movement.Moves;
 import net.minecraft.core.BlockPos;
@@ -17,9 +18,9 @@ public class GetToBlockGoal extends Goal {
 
     private S2Node walkingTo;
 
-    public GetToBlockGoal(Mob mob, BlockPos target) {
+    public GetToBlockGoal(Mob mob, BetterBlockPos target) {
         this.mob = mob;
-        this.target = new S2Node(target, Moves.CARDINAL);
+        this.target = new S2Node(target, Moves.START);
 
         setFlags(EnumSet.of(Flag.MOVE));
     }
@@ -39,7 +40,8 @@ public class GetToBlockGoal extends Goal {
 
     @Override
     public void start() {
-        path = new AStarPathCalculator(mob.blockPosition(), target.getPos(), mob.level).calculate().getPositions();
+        AStarPathCalculator calculator = new AStarPathCalculator();
+        path = calculator.calculate(BetterBlockPos.from(mob.blockPosition()), BetterBlockPos.from(target.getPos()), mob.level).getPositions();
         walkingTo = path.get(0);
     }
 
@@ -52,7 +54,7 @@ public class GetToBlockGoal extends Goal {
             path.remove(0);
             walkingTo = path.get(0);
 
-            walkingTo.getMove().get().move(mob, walkingTo.getPos());
+            walkingTo.getMove().type.move(mob, walkingTo.getPos());
         }
     }
 }
