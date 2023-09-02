@@ -52,12 +52,13 @@ public class AStarPathCalculator {
                 // DEBUG
                 level.setBlock(neighborPos, Blocks.RED_STAINED_GLASS.defaultBlockState(), 3);
 
-                S2Node neighbor = getNodeAtPosition(neighborPos, BetterBlockPos.longHash(neighborPos), current, move);
+                long currentHash = BetterBlockPos.longHash(current.getPos());
+                S2Node neighbor = getNodeAtPosition(neighborPos, BetterBlockPos.longHash(neighborPos), currentHash, move);
                 double tentativeGCost = current.getGCost() + move.cost;
 
                 // this is a better path, go for it!
                 if (neighbor.getGCost() - tentativeGCost > minimumImprovement) {
-                    neighbor.setParent(current);
+                    neighbor.setParent(currentHash);
                     neighbor.setGCost(tentativeGCost);
                     neighbor.setHCost(neighbor.getPos().distSqr(endPos));
 
@@ -80,14 +81,14 @@ public class AStarPathCalculator {
         return new S2Path(Lists.newArrayList()); // empty list, meaning no path
     }
 
-    private static S2Path retrace(S2Node goal) {
+    private S2Path retrace(S2Node goal) {
         List<S2Node> path = Lists.newArrayList();
         S2Node current = goal;
 
         // create path by going backwards
         while (current != null) {
             path.add(current);
-            current = current.getParent();
+            current = map.get(current.getParent());
         }
 
         Collections.reverse(path);
@@ -95,7 +96,7 @@ public class AStarPathCalculator {
         return new S2Path(path);
     }
 
-    private S2Node getNodeAtPosition(BetterBlockPos pos, long hashCode, S2Node parent, Moves move) {
+    private S2Node getNodeAtPosition(BetterBlockPos pos, long hashCode, long parent, Moves move) {
         S2Node node = map.get(hashCode);
         if (node == null) {
             node = new S2Node(pos, move, parent);

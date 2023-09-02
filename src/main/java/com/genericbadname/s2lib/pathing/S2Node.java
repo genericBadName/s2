@@ -15,7 +15,7 @@ public class S2Node {
     private final BetterBlockPos pos;
     private final Moves move;
 
-    private S2Node parent;
+    private long parent;
     private int heapPosition;
 
     public S2Node(BetterBlockPos pos, Moves move) {
@@ -24,7 +24,7 @@ public class S2Node {
         this.heapPosition = -1;
     }
 
-    public S2Node(BetterBlockPos pos, Moves move, S2Node parent) {
+    public S2Node(BetterBlockPos pos, Moves move, long parent) {
         this.pos = pos;
         this.move = move;
         this.heapPosition = -1;
@@ -56,7 +56,7 @@ public class S2Node {
         return gCost + hCost;
     }
 
-    public S2Node getParent() {
+    public long getParent() {
         return parent;
     }
 
@@ -72,7 +72,7 @@ public class S2Node {
         return heapPosition;
     }
 
-    public void setParent(S2Node parent) {
+    public void setParent(long parent) {
         this.parent = parent;
     }
 
