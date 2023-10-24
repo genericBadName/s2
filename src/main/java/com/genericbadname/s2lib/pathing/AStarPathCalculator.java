@@ -19,7 +19,7 @@ public class AStarPathCalculator {
 
     // run until completion
     public S2Path calculate(BetterBlockPos startPos, BetterBlockPos endPos, Level level) {
-        S2Lib.LOGGER.debug("Starting pathfinder from {} to {} in {}", startPos, endPos, level);
+        S2Lib.logInfo("Starting pathfinder from {} to {} in {}", startPos, endPos, level);
         long startTime = System.currentTimeMillis();
         int numNodes = 1;
 
@@ -32,13 +32,11 @@ public class AStarPathCalculator {
         // start looping through nodes
         while (!openSet.isEmpty() && System.currentTimeMillis() - startTime <= timeoutTime) {
             S2Node current = openSet.removeLowest(); // get lowest f-score
-            S2Lib.LOGGER.info("Current node: {}", current);
+            S2Lib.logInfo("Current node: {}", current);
 
             // if at goal, stop searching and retrace path
             if (current.getPos().equals(endPos)) {
-                S2Lib.LOGGER.info("Found a valid path to target");
-                S2Lib.LOGGER.info("Open set contains {} nodes", openSet.size());
-                S2Lib.LOGGER.info("Considered {} nodes per second", (int) (numNodes * 1.0 / ((System.currentTimeMillis() - startTime) / 1000F)));
+                logOut(true, numNodes, startTime);
 
                 return retrace(current);
             }
@@ -48,7 +46,7 @@ public class AStarPathCalculator {
                 BetterBlockPos neighborPos = current.getPos().offset(move.offset);
 
                 // check if neighbor is valid, otherwise skip node
-                if (level.getBlockState(neighborPos).is(Blocks.STONE)) continue;
+                if (level.getBlockState(neighborPos).is(Blocks.STONE) || level.getBlockState(neighborPos).is(Blocks.GLASS)) continue;
                 // DEBUG
                 level.setBlock(neighborPos, Blocks.RED_STAINED_GLASS.defaultBlockState(), 3);
 
@@ -74,9 +72,7 @@ public class AStarPathCalculator {
             }
         }
 
-        S2Lib.LOGGER.info("Failed to find a valid path or timed out");
-        S2Lib.LOGGER.info("Open set contains {} nodes", openSet.size());
-        S2Lib.LOGGER.info("Considered {} nodes per second", (int) (numNodes * 1.0 / ((System.currentTimeMillis() - startTime) / 1000F)));
+        logOut(false, numNodes, startTime);
 
         return new S2Path(Lists.newArrayList()); // empty list, meaning no path
     }
@@ -104,5 +100,11 @@ public class AStarPathCalculator {
         }
 
         return node;
+    }
+
+    private void logOut(boolean success, int numNodes, long startTime) {
+        S2Lib.logInfo(success ? "Found a valid path to target" : "Failed to find a valid path to target");
+        S2Lib.logInfo("Open set contains {} nodes", openSet.size());
+        S2Lib.logInfo("Considered {} nodes per second", (int) (numNodes * 1.0 / ((System.currentTimeMillis() - startTime) / 1000F)));
     }
 }

@@ -24,18 +24,22 @@ public class PathfindingTestCommand {
     }
 
     public static int run(CommandSourceStack ctx, BlockPos start, BlockPos end) {
-        S2Lib.LOGGER.info("running pathfinder");
-        // loop through path
-        AStarPathCalculator calculator = new AStarPathCalculator();
+        try {
+            S2Lib.logInfo("running pathfinder");
+            // loop through path
+            AStarPathCalculator calculator = new AStarPathCalculator();
 
-        List<S2Node> nodes = calculator.calculate(BetterBlockPos.from(start), BetterBlockPos.from(end), ctx.getLevel()).getPositions();
-        S2Lib.LOGGER.info("Got node list of size {}", nodes.size());
+            List<S2Node> nodes = calculator.calculate(BetterBlockPos.from(start), BetterBlockPos.from(end), ctx.getLevel()).getPositions();
+            S2Lib.logInfo("Got node list of size {}", nodes.size());
 
-        for (S2Node node : nodes) {
-            ctx.getLevel().setBlock(node.getPos(), Blocks.RED_CONCRETE.defaultBlockState(), 3);
+            for (S2Node node : nodes) {
+                ctx.getLevel().setBlock(node.getPos(), Blocks.RED_CONCRETE.defaultBlockState(), 3);
+            }
+
+            S2Lib.logInfo("done :)");
+        } catch(Exception e) {
+            S2Lib.LOGGER.error("Pathfinding test failed with error: {}", e);
         }
-
-        S2Lib.LOGGER.info("done :)");
 
         return Command.SINGLE_SUCCESS;
     }

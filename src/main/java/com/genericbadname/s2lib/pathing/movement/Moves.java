@@ -1,20 +1,24 @@
 package com.genericbadname.s2lib.pathing.movement;
 
-import com.genericbadname.s2lib.pathing.movement.type.CardinalMovement;
+import com.genericbadname.s2lib.pathing.movement.type.ParkourMovement;
+import com.genericbadname.s2lib.pathing.movement.type.VerticalMovement;
+import com.genericbadname.s2lib.pathing.movement.type.WalkMovement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.util.Mth;
 
+// while this enum looks terrible, it's pretty damn efficient, so I'm not going to give it up
 public enum Moves {
-    START(new CardinalMovement(), 0, 0, 0, 0),
-    WALK_NORTH(new CardinalMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, 0, 0, -1),
-    WALK_SOUTH(new CardinalMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, 0, 0, 1),
-    WALK_EAST(new CardinalMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, 1, 0, 0),
-    WALK_WEST(new CardinalMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, -1, 0, 0),
-    WALK_NORTHEAST(new CardinalMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, 1, 0, -1),
-    WALK_NORTHWEST(new CardinalMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, -1, 0, -1),
-    WALK_SOUTHEAST(new CardinalMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, 1, 0, 1),
-    WALK_SOUTHWEST(new CardinalMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, -1, 0, 1);
+    START(new WalkMovement(), 0, 0, 0, 0),
+    WALK_NORTH(new WalkMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, 0, 0, -1),
+    WALK_SOUTH(new WalkMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, 0, 0, 1),
+    WALK_EAST(new WalkMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, 1, 0, 0),
+    WALK_WEST(new WalkMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, -1, 0, 0),
+    WALK_NORTHEAST(new WalkMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, 1, 0, -1),
+    WALK_NORTHWEST(new WalkMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, -1, 0, -1),
+    WALK_SOUTHEAST(new WalkMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, 1, 0, 1),
+    WALK_SOUTHWEST(new WalkMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost, -1, 0, 1),
+    ASCEND(new VerticalMovement(true, 1), ActionCosts.WALK_ONE_BLOCK_COST.cost, 0, 1, 0),
+    DESCEND(new VerticalMovement(false, 1), ActionCosts.WALK_ONE_IN_WATER_COST.cost, 0, -1, 0);
 
     public final IMovement type;
     public final double cost;

@@ -1,17 +1,19 @@
 package com.genericbadname.s2lib.pathing.movement.type;
 
-import com.genericbadname.s2lib.pathing.AStarPathCalculator;
-import com.genericbadname.s2lib.pathing.S2Node;
+import com.genericbadname.s2lib.config.ServerConfig;
 import com.genericbadname.s2lib.pathing.movement.IMovement;
 import com.genericbadname.s2lib.pathing.movement.Moves;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 
-import java.util.List;
-
-public class CardinalMovement implements IMovement {
+public class VerticalMovement implements IMovement
+{
+    private final boolean ascending;
+    private final int blocks;
+    public VerticalMovement(boolean ascending, int blocks) {
+        this.ascending = ascending;
+        this.blocks = blocks;
+    }
     @Override
     public void move(Mob mob, BlockPos pos) {
         float yRot = (float) Moves.rotFromPos(mob.blockPosition(), pos);
@@ -22,6 +24,6 @@ public class CardinalMovement implements IMovement {
 
     @Override
     public double cost(Mob mob, BlockPos start, BlockPos end) {
-        return start.distSqr(end);
+        return start.distSqr(end) + blocks * (ascending ? ServerConfig.ASCEND_COST.get() : ServerConfig.DESCEND_COST.get());
     }
 }
