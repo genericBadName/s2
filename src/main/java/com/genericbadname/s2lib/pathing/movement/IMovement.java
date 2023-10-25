@@ -1,5 +1,6 @@
 package com.genericbadname.s2lib.pathing.movement;
 
+import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.S2Node;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -12,4 +13,6 @@ public interface IMovement {
     void move(Mob mob, BlockPos pos);
 
     double cost(Mob mob, BlockPos start, BlockPos end);
+
+    boolean isValidPosition(Level level, BetterBlockPos pos);
 }

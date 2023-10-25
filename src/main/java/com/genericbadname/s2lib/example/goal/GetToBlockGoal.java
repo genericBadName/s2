@@ -40,8 +40,8 @@ public class GetToBlockGoal extends Goal {
 
     @Override
     public void start() {
-        AStarPathCalculator calculator = new AStarPathCalculator();
-        path = calculator.calculate(BetterBlockPos.from(mob.blockPosition()), BetterBlockPos.from(target.getPos()), mob.level).getPositions();
+        AStarPathCalculator calculator = new AStarPathCalculator(mob.level);
+        path = calculator.calculate(BetterBlockPos.from(mob.blockPosition()), BetterBlockPos.from(target.getPos())).getPositions();
         walkingTo = path.get(0);
     }
 
