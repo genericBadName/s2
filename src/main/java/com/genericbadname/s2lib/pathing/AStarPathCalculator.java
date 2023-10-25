@@ -1,6 +1,7 @@
 package com.genericbadname.s2lib.pathing;
 
 import com.genericbadname.s2lib.S2Lib;
+import com.genericbadname.s2lib.data.tag.ModBlockTags;
 import com.genericbadname.s2lib.pathing.movement.IMovement;
 import com.genericbadname.s2lib.pathing.movement.Moves;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -55,12 +56,12 @@ public class AStarPathCalculator {
             for (Moves move : Moves.values()) {
                 IMovement movement = move.type;
                 // iterate over each step of the movement (used in multi-block checks like parkour jumps)
-                for (int step=0;step<move.steps;step++) {
-                    BetterBlockPos neighborPos = current.getPos().offset(move.offset.multiply(step+1));
+                for (int step=1;step<=move.steps;step++) {
+                    BetterBlockPos neighborPos = current.getPos().offset(move.offset.offset(move.stepVec.multiply(step)));
 
                     // check if neighbor is valid, otherwise skip node
                     // DEBUG
-                    //level.setBlock(neighborPos, Blocks.RED_STAINED_GLASS.defaultBlockState(), 3);
+                    //debugMove(neighborPos);
                     if (!movement.isValidPosition(level, neighborPos)) continue;
 
                     long currentHash = BetterBlockPos.longHash(current.getPos());
@@ -121,5 +122,11 @@ public class AStarPathCalculator {
         S2Lib.logInfo(success ? "Found a valid path to target" : "Failed to find a valid path to target");
         S2Lib.logInfo("Open set contains {} nodes", openSet.size());
         S2Lib.logInfo("Considered {} nodes per second", (int) (numNodes * 1.0 / ((System.currentTimeMillis() - startTime) / 1000F)));
+    }
+
+    private void debugMove(BetterBlockPos neighborPos) {
+        if (level.getBlockState(neighborPos).is(ModBlockTags.PASSABLE)) {
+            level.setBlock(neighborPos, Blocks.RED_STAINED_GLASS.defaultBlockState(), 3);
+        }
     }
 }
