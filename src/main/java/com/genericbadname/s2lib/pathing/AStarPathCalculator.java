@@ -13,6 +13,8 @@ import org.apache.commons.compress.utils.Lists;
 import java.util.Collections;
 import java.util.List;
 
+import static com.genericbadname.s2lib.pathing.movement.IMovement.PositionValidity;
+
 public class AStarPathCalculator {
     private static final double minimumImprovement = 0.01;
     private static final long timeoutTime = 5 * 1000; // in ms
@@ -62,8 +64,9 @@ public class AStarPathCalculator {
                     // check if neighbor is valid, otherwise skip node
                     // DEBUG
                     //debugMove(neighborPos);
-                    if (!movement.isValidPosition(level, neighborPos)) {
-                        if (move.fastFail) {
+                    PositionValidity validity = movement.isValidPosition(level, neighborPos);
+                    if (!validity.equals(PositionValidity.SUCCESS)) {
+                        if (validity.equals(move.failCondition)) {
                             break;
                         } else {
                             continue;

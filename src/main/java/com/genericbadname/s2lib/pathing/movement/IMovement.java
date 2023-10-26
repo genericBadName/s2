@@ -14,5 +14,12 @@ public interface IMovement {
 
     double cost(Mob mob, BlockPos start, BlockPos end);
 
-    boolean isValidPosition(Level level, BetterBlockPos pos);
+    PositionValidity isValidPosition(Level level, BetterBlockPos pos);
+
+    enum PositionValidity {
+        SUCCESS,
+        FAIL_BLOCKED,
+        FAIL_MISSING_BLOCK,
+        NO_FAIL_CONDITION
+    }
 }

@@ -32,13 +32,13 @@ public class FallMovement implements IMovement
     }
 
     @Override
-    public boolean isValidPosition(Level level, BetterBlockPos pos) {
+    public PositionValidity isValidPosition(Level level, BetterBlockPos pos) {
         BlockState current = level.getBlockState(pos); // foot level
         BlockState above = level.getBlockState(pos.offset(0, 1, 0)); // eye level
 
-        if (!current.is(ModBlockTags.PASSABLE)) return false; // ensure foot is passable
-        if (!above.is(ModBlockTags.PASSABLE)) return false; // ensure head is passable
+        if (!current.is(ModBlockTags.PASSABLE)) return PositionValidity.FAIL_BLOCKED; // ensure foot is passable
+        if (!above.is(ModBlockTags.PASSABLE)) return PositionValidity.FAIL_BLOCKED; // ensure head is passable
 
-        return true;
+        return PositionValidity.SUCCESS;
     }
 }
