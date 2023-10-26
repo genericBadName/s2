@@ -1,6 +1,7 @@
 package com.genericbadname.s2lib.pathing;
 
 import com.genericbadname.s2lib.S2Lib;
+import com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor;
 import com.genericbadname.s2lib.data.tag.ModBlockTags;
 import com.genericbadname.s2lib.pathing.movement.IMovement;
 import com.genericbadname.s2lib.pathing.movement.Moves;
@@ -22,17 +23,17 @@ public class AStarPathCalculator {
     private final BinaryHeapOpenSet openSet;
     private final Long2ObjectOpenHashMap<S2Node> map;
 
-    private final Level level;
+    private final BakedLevelAccessor bakery;
 
     public AStarPathCalculator(Level level) {
-        this.level = level;
+        this.bakery = new BakedLevelAccessor(level);
         this.openSet = new BinaryHeapOpenSet();
         this.map = new Long2ObjectOpenHashMap<>();
     }
 
     // run until completion
     public S2Path calculate(BetterBlockPos startPos, BetterBlockPos endPos) {
-        S2Lib.logInfo("Starting pathfinder from {} to {} in {}", startPos, endPos, level);
+        S2Lib.logInfo("Starting pathfinder from {} to {} in {}", startPos, endPos, bakery);
         long startTime = System.currentTimeMillis();
         int numNodes = 1;
 
@@ -64,7 +65,7 @@ public class AStarPathCalculator {
                     // check if neighbor is valid, otherwise skip node
                     // DEBUG
                     //debugMove(neighborPos);
-                    PositionValidity validity = movement.isValidPosition(level, neighborPos);
+                    PositionValidity validity = movement.isValidPosition(bakery, neighborPos);
                     if (!validity.equals(PositionValidity.SUCCESS)) {
                         if (validity.equals(move.failCondition)) {
                             break;
@@ -134,8 +135,8 @@ public class AStarPathCalculator {
     }
 
     private void debugMove(BetterBlockPos neighborPos) {
-        if (level.getBlockState(neighborPos).is(ModBlockTags.PASSABLE)) {
-            level.setBlock(neighborPos, Blocks.RED_STAINED_GLASS.defaultBlockState(), 3);
+        if (bakery.isPassable(neighborPos)) {
+            bakery.getLevel().setBlock(neighborPos, Blocks.RED_STAINED_GLASS.defaultBlockState(), 3);
         }
     }
 }

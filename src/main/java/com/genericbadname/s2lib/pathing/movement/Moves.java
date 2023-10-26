@@ -36,14 +36,14 @@ public enum Moves {
     PARKOUR_NORTHWEST(new ParkourMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost * ServerConfig.JUMP_COST_MULTIPLIER.get(), -1, 0, -1, ServerConfig.MAX_JUMP_DISTANCE.get(), -1, 0, -1, PositionValidity.FAIL_BLOCKED),
     PARKOUR_SOUTHEAST(new ParkourMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost * ServerConfig.JUMP_COST_MULTIPLIER.get(), 1, 0, 1, ServerConfig.MAX_JUMP_DISTANCE.get(), 1, 0, 1, PositionValidity.FAIL_BLOCKED),
     PARKOUR_SOUTHWEST(new ParkourMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost * ServerConfig.JUMP_COST_MULTIPLIER.get(), -1, 0, 1, ServerConfig.MAX_JUMP_DISTANCE.get(), -1, 0, 1, PositionValidity.FAIL_BLOCKED),
-    FALL_NORTH(new WalkMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), 0, -1, -1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
-    FALL_SOUTH(new WalkMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), 0, -1, 1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
-    FALL_EAST(new WalkMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), 1, -1, 0, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
-    FALL_WEST(new WalkMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), -1, -1, 0, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
-    FALL_NORTHEAST(new WalkMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), 1, -1, -1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
-    FALL_NORTHWEST(new WalkMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), -1, -1, 1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
-    FALL_SOUTHEAST(new WalkMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), 1, -1, 1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
-    FALL_SOUTHWEST(new WalkMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), -1, -1, 1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0);
+    FALL_NORTH(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), 0, -1, -1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
+    FALL_SOUTH(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), 0, -1, 1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
+    FALL_EAST(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), 1, -1, 0, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
+    FALL_WEST(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), -1, -1, 0, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
+    FALL_NORTHEAST(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), 1, -1, -1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
+    FALL_NORTHWEST(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), -1, -1, 1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
+    FALL_SOUTHEAST(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), 1, -1, 1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
+    FALL_SOUTHWEST(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), -1, -1, 1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0);
 
     public final IMovement type;
     public final double cost;

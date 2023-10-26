@@ -1,5 +1,6 @@
 package com.genericbadname.s2lib.pathing.movement.type;
 
+import com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor;
 import com.genericbadname.s2lib.data.tag.ModBlockTags;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.movement.IMovement;
@@ -9,6 +10,8 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+
+import static com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor.HazardLevel;
 
 public class WalkMovement implements IMovement {
     @Override
@@ -25,14 +28,10 @@ public class WalkMovement implements IMovement {
     }
 
     @Override
-    public PositionValidity isValidPosition(Level level, BetterBlockPos pos) {
-        BlockState current = level.getBlockState(pos); // foot level
-        BlockState above = level.getBlockState(pos.offset(0, 1, 0)); // eye level
-        BlockState below = level.getBlockState(pos.offset(0, -1, 0)); // below foot level (ground)
-
-        if (!current.is(ModBlockTags.PASSABLE)) return PositionValidity.FAIL_BLOCKED; // ensure foot is passable
-        if (!above.is(ModBlockTags.PASSABLE)) return PositionValidity.FAIL_BLOCKED; // ensure head is passable
-        if (below.is(ModBlockTags.PASSABLE)) return PositionValidity.FAIL_MISSING_BLOCK; // ensure stepping on block is possible
+    public PositionValidity isValidPosition(BakedLevelAccessor bakery, BetterBlockPos pos) {
+        if (bakery.isWalkable(pos)) return PositionValidity.FAIL_BLOCKED; // ensure foot is passable
+        if (bakery.isWalkable(pos.offset(0, 1, 0))) return PositionValidity.FAIL_BLOCKED; // ensure head is passable
+        if (bakery.isPassable(pos.offset(0, -1, 0))) return PositionValidity.FAIL_MISSING_BLOCK; // ensure stepping on block is possible
 
         return PositionValidity.SUCCESS;
     }
