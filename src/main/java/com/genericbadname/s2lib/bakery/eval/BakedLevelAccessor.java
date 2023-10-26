@@ -1,5 +1,6 @@
 package com.genericbadname.s2lib.bakery.eval;
 
+import com.genericbadname.s2lib.config.ServerConfig;
 import com.genericbadname.s2lib.data.tag.ModBlockTags;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import net.minecraft.tags.TagKey;
@@ -46,11 +47,16 @@ public class BakedLevelAccessor {
     }
 
     public enum HazardLevel {
-        UNKNOWN,
-        PASSABLE,
-        WALKABLE,
-        POTENTIALLY_AVOID,
-        AVOID,
-        AVOID_AT_ALL_COSTS
+        UNKNOWN(ServerConfig.UNKNOWN_COST_MULTIPLIER.get()),
+        PASSABLE(ServerConfig.PASSABLE_COST_MULTIPLIER.get()),
+        WALKABLE(ServerConfig.WALKABLE_COST_MULTIPLIER.get()),
+        POTENTIALLY_AVOID(ServerConfig.POTENTIALLY_AVOID_COST_MULTIPLIER.get()),
+        AVOID(ServerConfig.AVOID_COST_MULTIPLIER.get()),
+        AVOID_AT_ALL_COSTS(ServerConfig.AVOID_COST_MULTIPLIER.get());
+
+        public final double costMultiplier;
+        HazardLevel(double costMultiplier) {
+            this.costMultiplier = costMultiplier;
+        }
     }
 }

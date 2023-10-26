@@ -6,6 +6,14 @@ public class ServerConfig {
     public static ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     public static ForgeConfigSpec SPEC;
 
+    // hazard levels
+    public static final ForgeConfigSpec.ConfigValue<Double> UNKNOWN_COST_MULTIPLIER;
+    public static final ForgeConfigSpec.ConfigValue<Double> PASSABLE_COST_MULTIPLIER;
+    public static final ForgeConfigSpec.ConfigValue<Double> WALKABLE_COST_MULTIPLIER;
+    public static final ForgeConfigSpec.ConfigValue<Double> POTENTIALLY_AVOID_COST_MULTIPLIER;
+    public static final ForgeConfigSpec.ConfigValue<Double> AVOID_COST_MULTIPLIER;
+    public static final ForgeConfigSpec.ConfigValue<Double> AVOID_AT_ALL_COSTS_COST_MULTIPLIER;
+
     // jumping (parkour)
     public static final ForgeConfigSpec.ConfigValue<Double> JUMP_COST_MULTIPLIER;
     public static final ForgeConfigSpec.ConfigValue<Integer> MAX_JUMP_DISTANCE;
@@ -19,6 +27,14 @@ public class ServerConfig {
 
     static {
         BUILDER.push("S2 Configs");
+
+        BUILDER.push("Hazard Levels");
+        UNKNOWN_COST_MULTIPLIER = BUILDER.define("unknown_cost_multiplier", 1.0);
+        PASSABLE_COST_MULTIPLIER = BUILDER.define("passable_cost_multiplier", 1.0);
+        WALKABLE_COST_MULTIPLIER = BUILDER.define("walkable_cost_multiplier", 1.0);
+        POTENTIALLY_AVOID_COST_MULTIPLIER = BUILDER.define("potential_avoid_cost_multiplier", 5.0);
+        AVOID_COST_MULTIPLIER = BUILDER.define("avoid_cost_multiplier", 15.0);
+        AVOID_AT_ALL_COSTS_COST_MULTIPLIER = BUILDER.define("avoid_at_all_costs_multiplier", 50.0);
 
         JUMP_COST_MULTIPLIER = BUILDER.define("jump_cost_multiplier", 2.0);
         MAX_JUMP_DISTANCE = BUILDER.define("max_jump_distance", 2);

@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.genericbadname.s2lib.pathing.movement.IMovement.PositionValidity;
+import static com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor.HazardLevel;
 
 public class AStarPathCalculator {
     private static final double minimumImprovement = 0.01;
@@ -76,7 +77,9 @@ public class AStarPathCalculator {
 
                     long currentHash = BetterBlockPos.longHash(current.getPos());
                     S2Node neighbor = getNodeAtPosition(neighborPos, BetterBlockPos.longHash(neighborPos), currentHash, move);
-                    double tentativeGCost = current.getGCost() + move.cost;
+
+                    HazardLevel hazardLevel = bakery.getHazardLevel(neighborPos);
+                    double tentativeGCost = (current.getGCost() + move.cost) * hazardLevel.costMultiplier;
 
                     // this is a better path, go for it!
                     if (neighbor.getGCost() - tentativeGCost > minimumImprovement) {
