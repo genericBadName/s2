@@ -12,11 +12,17 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class FallMovement implements IMovement
 {
+    private double originalY = 1024;
+
+    public FallMovement() {
+
+    }
     @Override
     public void move(Mob mob, BlockPos pos) {
+        if (originalY == 1024) originalY = mob.getY();
         float yRot = (float) Moves.rotFromPos(mob.blockPosition(), pos);
 
-        mob.lerpTo(pos.getX()+0.5, pos.getY(), pos.getZ()+0.5, yRot, 0, 10, false);
+        mob.lerpTo(pos.getX()+0.5, originalY, pos.getZ()+0.5, yRot, 0, 10, false);
         mob.setYHeadRot(yRot);
     }
 

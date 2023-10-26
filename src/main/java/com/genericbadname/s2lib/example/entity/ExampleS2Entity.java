@@ -24,6 +24,6 @@ public class ExampleS2Entity extends Zombie {
 
     @Override
     protected void registerGoals() {
-        goalSelector.addGoal(0, new GetToBlockGoal(this, new BetterBlockPos(0, -60, 0)));
+        goalSelector.addGoal(0, new GetToBlockGoal(this, new BetterBlockPos(10, -61, 5)));
     }
 }

@@ -13,9 +13,9 @@ import java.util.List;
 
 public class GetToBlockGoal extends Goal {
     private final Mob mob;
+    private AStarPathCalculator calculator;
     private final S2Node target;
     private List<S2Node> path;
-
     private S2Node walkingTo;
 
     public GetToBlockGoal(Mob mob, BetterBlockPos target) {
@@ -40,8 +40,10 @@ public class GetToBlockGoal extends Goal {
 
     @Override
     public void start() {
-        AStarPathCalculator calculator = new AStarPathCalculator(mob.level);
-        path = calculator.calculate(BetterBlockPos.from(mob.blockPosition()), BetterBlockPos.from(target.getPos())).getPositions();
+        this.calculator = new AStarPathCalculator(mob.level);
+        this.path = calculator.calculate(BetterBlockPos.from(mob.blockPosition()), BetterBlockPos.from(target.getPos())).getPositions();
+
+        if (path.isEmpty()) return;
         walkingTo = path.get(0);
     }
 

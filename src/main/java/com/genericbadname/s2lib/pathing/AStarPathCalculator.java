@@ -56,13 +56,19 @@ public class AStarPathCalculator {
             for (Moves move : Moves.values()) {
                 IMovement movement = move.type;
                 // iterate over each step of the movement (used in multi-block checks like parkour jumps)
-                for (int step=1;step<=move.steps;step++) {
+                for (int step=0;step<move.steps;step++) {
                     BetterBlockPos neighborPos = current.getPos().offset(move.offset.offset(move.stepVec.multiply(step)));
 
                     // check if neighbor is valid, otherwise skip node
                     // DEBUG
                     //debugMove(neighborPos);
-                    if (!movement.isValidPosition(level, neighborPos)) continue;
+                    if (!movement.isValidPosition(level, neighborPos)) {
+                        if (move.fastFail) {
+                            break;
+                        } else {
+                            continue;
+                        }
+                    }
 
                     long currentHash = BetterBlockPos.longHash(current.getPos());
                     S2Node neighbor = getNodeAtPosition(neighborPos, BetterBlockPos.longHash(neighborPos), currentHash, move);
