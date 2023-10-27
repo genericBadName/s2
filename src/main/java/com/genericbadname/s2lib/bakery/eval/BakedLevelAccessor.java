@@ -59,4 +59,11 @@ public class BakedLevelAccessor {
             this.costMultiplier = costMultiplier;
         }
     }
+
+    @Override
+    public String toString() {
+        return "BakedLevelAccessor{" +
+                "level=" + level +
+                '}';
+    }
 }
