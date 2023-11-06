@@ -8,7 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 
-public class ParkourMovement extends WalkMovement{
+public class ParkourMovement extends WalkMovement {
     @Override
     public void move(Mob mob, BlockPos pos) {
         float yRot = (float) Moves.rotFromPos(mob.blockPosition(), pos);

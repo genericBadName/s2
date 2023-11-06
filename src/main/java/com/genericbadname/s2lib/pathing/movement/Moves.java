@@ -7,8 +7,6 @@ import com.genericbadname.s2lib.pathing.movement.type.WalkMovement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 
-import static com.genericbadname.s2lib.pathing.movement.IMovement.PositionValidity;
-
 // while this enum looks terrible, it's pretty damn efficient, so I'm not going to give it up
 public enum Moves {
     START(new WalkMovement(), 0, 0, 0, 0),
@@ -27,30 +25,13 @@ public enum Moves {
     STEP_UP_NORTHEAST(new WalkMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost + ServerConfig.DESCEND_COST.get(), 1, 1, -1),
     STEP_UP_NORTHWEST(new WalkMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost + ServerConfig.DESCEND_COST.get(), -1, 1, -1),
     STEP_UP_SOUTHEAST(new WalkMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost + ServerConfig.DESCEND_COST.get(), 1, 1, 1),
-    STEP_UP_SOUTHWEST(new WalkMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost + ServerConfig.DESCEND_COST.get(), -1, 1, 1),
-    PARKOUR_NORTH(new ParkourMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost * ServerConfig.JUMP_COST_MULTIPLIER.get(), 0, 0, -1, ServerConfig.MAX_JUMP_DISTANCE.get(), 0, 0, 1, PositionValidity.FAIL_BLOCKED),
-    PARKOUR_SOUTH(new ParkourMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost * ServerConfig.JUMP_COST_MULTIPLIER.get(), 0, 0, 1, ServerConfig.MAX_JUMP_DISTANCE.get(), 0, 0, 1, PositionValidity.FAIL_BLOCKED),
-    PARKOUR_EAST(new ParkourMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost * ServerConfig.JUMP_COST_MULTIPLIER.get(), 1, 0, 0, ServerConfig.MAX_JUMP_DISTANCE.get(), 1, 0, 0, PositionValidity.FAIL_BLOCKED),
-    PARKOUR_WEST(new ParkourMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost * ServerConfig.JUMP_COST_MULTIPLIER.get(), -1, 0, 0, ServerConfig.MAX_JUMP_DISTANCE.get(), 1, 0, 0, PositionValidity.FAIL_BLOCKED),
-    PARKOUR_NORTHEAST(new ParkourMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost * ServerConfig.JUMP_COST_MULTIPLIER.get(), 1, 0, -1, ServerConfig.MAX_JUMP_DISTANCE.get(), 1, 0, -1, PositionValidity.FAIL_BLOCKED),
-    PARKOUR_NORTHWEST(new ParkourMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost * ServerConfig.JUMP_COST_MULTIPLIER.get(), -1, 0, -1, ServerConfig.MAX_JUMP_DISTANCE.get(), -1, 0, -1, PositionValidity.FAIL_BLOCKED),
-    PARKOUR_SOUTHEAST(new ParkourMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost * ServerConfig.JUMP_COST_MULTIPLIER.get(), 1, 0, 1, ServerConfig.MAX_JUMP_DISTANCE.get(), 1, 0, 1, PositionValidity.FAIL_BLOCKED),
-    PARKOUR_SOUTHWEST(new ParkourMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost * ServerConfig.JUMP_COST_MULTIPLIER.get(), -1, 0, 1, ServerConfig.MAX_JUMP_DISTANCE.get(), -1, 0, 1, PositionValidity.FAIL_BLOCKED),
-    FALL_NORTH(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), 0, -1, -1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
-    FALL_SOUTH(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), 0, -1, 1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
-    FALL_EAST(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), 1, -1, 0, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
-    FALL_WEST(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), -1, -1, 0, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
-    FALL_NORTHEAST(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), 1, -1, -1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
-    FALL_NORTHWEST(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), -1, -1, 1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
-    FALL_SOUTHEAST(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), 1, -1, 1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0),
-    FALL_SOUTHWEST(new FallMovement(), ActionCosts.WALK_ONE_IN_WATER_COST.cost + ServerConfig.FALL_COST.get(), -1, -1, 1, ServerConfig.MAX_FALL_DISTANCE.get(), 0, -1, 0);
+    STEP_UP_SOUTHWEST(new WalkMovement(), ActionCosts.WALK_ONE_BLOCK_COST.cost + ServerConfig.DESCEND_COST.get(), -1, 1, 1);
 
     public final IMovement type;
     public final double cost;
     public final Vec3i offset;
     public final int steps;
     public final Vec3i stepVec;
-    public final PositionValidity failCondition;
 
     // TODO: replace with builder pattern possibly?
 
@@ -60,7 +41,6 @@ public enum Moves {
         this.offset = offset;
         this.steps = 1;
         this.stepVec = new Vec3i(0, 0, 0);
-        this.failCondition = PositionValidity.NO_FAIL_CONDITION;
     }
 
     Moves(IMovement type, double cost, Vec3i offset, int steps) {
@@ -69,7 +49,6 @@ public enum Moves {
         this.offset = offset;
         this.steps = steps;
         this.stepVec = new Vec3i(0, 0, 0);
-        this.failCondition = PositionValidity.NO_FAIL_CONDITION;
     }
 
     Moves(IMovement type, double cost, Vec3i offset, int steps, Vec3i stepVec) {
@@ -78,16 +57,6 @@ public enum Moves {
         this.offset = offset;
         this.steps = steps;
         this.stepVec = stepVec;
-        this.failCondition = PositionValidity.NO_FAIL_CONDITION;
-    }
-
-    Moves(IMovement type, double cost, Vec3i offset, int steps, Vec3i stepVec, PositionValidity failCondition) {
-        this.type = type;
-        this.cost = cost;
-        this.offset = offset;
-        this.steps = steps;
-        this.stepVec = stepVec;
-        this.failCondition = failCondition;
     }
 
     Moves(IMovement type, double cost, int x, int y, int z) {
@@ -100,10 +69,6 @@ public enum Moves {
 
     Moves(IMovement type, double cost, int x, int y, int z, int steps, int sx, int sy, int sz) {
         this(type, cost, new Vec3i(x, y, z), steps, new Vec3i(sx, sy, sz));
-    }
-
-    Moves(IMovement type, double cost, int x, int y, int z, int steps, int sx, int sy, int sz, PositionValidity failCondition) {
-        this(type, cost, new Vec3i(x, y, z), steps, new Vec3i(sx, sy, sz), failCondition);
     }
 
     // 4 or 8 directional movement
