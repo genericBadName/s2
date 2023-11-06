@@ -2,14 +2,11 @@ package com.genericbadname.s2lib.pathing;
 
 import com.genericbadname.s2lib.S2Lib;
 import com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor;
-import com.genericbadname.s2lib.data.tag.ModBlockTags;
-import com.genericbadname.s2lib.pathing.movement.ActionCosts;
 import com.genericbadname.s2lib.pathing.movement.IMovement;
 import com.genericbadname.s2lib.pathing.movement.Moves;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.compress.utils.Lists;
 
 import java.util.Collections;
@@ -69,7 +66,6 @@ public class AStarPathCalculator {
                     //S2Lib.logInfo("current pos: {}", neighborPos);
 
                     // check if neighbor is valid, otherwise skip node
-                    // make position have an impossible cost if it's not pathfindable (to prevent duplicate node calculation)
                     if (!movement.isValidPosition(bakery, neighborPos)) {
                         break;
                     }

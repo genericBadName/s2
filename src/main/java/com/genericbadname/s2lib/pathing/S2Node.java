@@ -1,15 +1,13 @@
 package com.genericbadname.s2lib.pathing;
 
-import com.genericbadname.s2lib.S2Lib;
-import com.genericbadname.s2lib.pathing.movement.ActionCosts;
+import com.genericbadname.s2lib.config.ServerConfig;
 import com.genericbadname.s2lib.pathing.movement.Moves;
-import net.minecraft.core.BlockPos;
 
 /**
  * A singular node in an {@link S2Path}. Stores cost-related information and its parent node, for later traversal.
  */
 public class S2Node {
-    public double gCost = ActionCosts.COST_INF.cost;
+    public double gCost = ServerConfig.COST_INF.get();
     private double hCost;
 
     private final BetterBlockPos pos;
