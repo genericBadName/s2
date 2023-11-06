@@ -13,18 +13,19 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 
 import java.util.List;
+import java.util.Optional;
 
 public abstract class S2Mob extends PathfinderMob {
     public static final int RETRY_UPDATE_COOLDOWN = 20; // ticks
     public static final int FAIL_UPDATE_PENALTY = 60; // ticks
     private int updateTimer = RETRY_UPDATE_COOLDOWN;
     private final AStarPathCalculator calculator;
-    private S2Path path;
+    private Optional<S2Path> path;
     private BetterBlockPos lastTracked;
     public S2Mob(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
         this.calculator = new AStarPathCalculator(level);
-        this.path = new S2Path();
+        this.path = Optional.of(new S2Path());
         this.lastTracked = BetterBlockPos.ORIGIN;
     }
 
@@ -39,17 +40,14 @@ public abstract class S2Mob extends PathfinderMob {
         if (updateTimer > 0) updateTimer--;
     }
 
-    public S2Path getPath() {
+    public Optional<S2Path> getPath() {
         return path;
     }
-    public S2Path calculateFromCurrentLocation(BetterBlockPos dest) {
+    public Optional<S2Path> calculateFromCurrentLocation(BetterBlockPos dest) {
         path = calculator.calculate(BetterBlockPos.from(blockPosition()), dest);
 
-        if (!path.isPossible()) updateTimer = FAIL_UPDATE_PENALTY; // stop constant failure updates
-
-        // DEBUG
-        //level.setBlockAndUpdate(blockPosition(), Blocks.RED_STAINED_GLASS.defaultBlockState());
-        //level.setBlockAndUpdate(dest, Blocks.GREEN_STAINED_GLASS.defaultBlockState());
+        if (path.isEmpty()) return path;
+        if (!path.get().isPossible()) updateTimer = FAIL_UPDATE_PENALTY; // stop constant failure updates
 
         return path;
     }
@@ -59,7 +57,7 @@ public abstract class S2Mob extends PathfinderMob {
 
         LivingEntity target = getTarget();
         updateTimer = RETRY_UPDATE_COOLDOWN;
-        path = null;
+        path = Optional.empty();
 
         // update path according to target position
         if (target != null) {
@@ -68,7 +66,6 @@ public abstract class S2Mob extends PathfinderMob {
 
                 lastTracked = BetterBlockPos.from(target.blockPosition());
                 path = calculateFromCurrentLocation(lastTracked);
-                //target.level.setBlockAndUpdate(lastTracked, Blocks.GREEN_STAINED_GLASS.defaultBlockState());
             }
         }
     }

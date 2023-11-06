@@ -14,6 +14,7 @@ import org.apache.commons.compress.utils.Lists;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor.HazardLevel;
 
@@ -33,11 +34,11 @@ public class AStarPathCalculator {
     }
 
     // run until completion
-    public S2Path calculate(BetterBlockPos startPos, BetterBlockPos endPos) {
+    public Optional<S2Path> calculate(BetterBlockPos startPos, BetterBlockPos endPos) {
         reset();
 
         S2Lib.logInfo("Starting pathfinder from {} to {} in {}", startPos, endPos, bakery);
-        if (startPos == null || endPos == null) return new S2Path();
+        if (startPos == null || endPos == null) return Optional.empty();
 
         long startTime = System.currentTimeMillis();
         int numNodes = 1;
@@ -101,10 +102,10 @@ public class AStarPathCalculator {
 
         logOut(false, numNodes, startTime);
 
-        return new S2Path(); // empty list, meaning no path
+        return Optional.empty(); // empty list, meaning no path
     }
 
-    private S2Path retrace(S2Node goal) {
+    private Optional<S2Path> retrace(S2Node goal) {
         List<S2Node> path = Lists.newArrayList();
         S2Node current = goal;
 
@@ -116,7 +117,7 @@ public class AStarPathCalculator {
 
         Collections.reverse(path);
 
-        return new S2Path(path);
+        return Optional.of(new S2Path(path));
     }
 
     private S2Node getNodeAtPosition(BetterBlockPos pos, long hashCode, long parent, Moves move) {
