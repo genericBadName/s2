@@ -42,11 +42,11 @@ public class ServerConfig {
 
         BUILDER.push("Pathfinder Config");
         COST_INF = BUILDER.define("cost_inf", 100000.0);
-        DIAGONAL_COST_MULTIPLIER = BUILDER.define("diagonal_cost_multiplier", 0.0);
+        DIAGONAL_COST_MULTIPLIER = BUILDER.define("diagonal_cost_multiplier", 1.25);
 
-        WALK_COST = BUILDER.define("walk_cost", 0.0);
+        WALK_COST = BUILDER.define("walk_cost", 20 / 4.317);
 
-        STEP_UP_COST = BUILDER.define("step_up_cost", 0.0);
+        STEP_UP_COST = BUILDER.define("step_up_cost", (20 / 4.317) * 1.1);
 
         PARKOUR_COST = BUILDER.define("parkour_cost", 2.0);
         MAX_JUMP_DISTANCE = BUILDER.define("max_jump_distance", 2);

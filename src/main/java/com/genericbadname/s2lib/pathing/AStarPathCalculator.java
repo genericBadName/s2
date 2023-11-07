@@ -4,6 +4,7 @@ import com.genericbadname.s2lib.S2Lib;
 import com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor;
 import com.genericbadname.s2lib.pathing.movement.IMovement;
 import com.genericbadname.s2lib.pathing.movement.Moves;
+import com.genericbadname.s2lib.pathing.movement.PositionValidity;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -66,9 +67,9 @@ public class AStarPathCalculator {
                     //S2Lib.logInfo("current pos: {}", neighborPos);
 
                     // check if neighbor is valid, otherwise skip node
-                    if (!movement.isValidPosition(bakery, neighborPos)) {
-                        break;
-                    }
+                    // TODO: possibly cache this result in the bakery for faster lookup?
+                    PositionValidity validity = movement.isValidPosition(bakery, neighborPos);
+                    if (validity.equals(move.stopCondition) || (move.stopCondition.equals(PositionValidity.NONE) && validity.ordinal() > 1)) break;
 
                     long currentHash = BetterBlockPos.longHash(current.getPos());
                     S2Node neighbor = getNodeAtPosition(neighborPos, BetterBlockPos.longHash(neighborPos), currentHash, move);

@@ -18,5 +18,5 @@ public interface IMovement {
         return start.distSqr(end);
     }
 
-    boolean isValidPosition(BakedLevelAccessor bakery, BetterBlockPos pos);
+    PositionValidity isValidPosition(BakedLevelAccessor bakery, BetterBlockPos pos);
 }
