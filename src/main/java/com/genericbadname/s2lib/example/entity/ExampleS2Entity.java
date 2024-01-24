@@ -1,32 +1,25 @@
 package com.genericbadname.s2lib.example.entity;
 
-import com.genericbadname.s2lib.example.goal.GetToBlockGoal;
 import com.genericbadname.s2lib.example.goal.S2NearestAttackableTargetGoal;
-import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.entity.S2Mob;
-import com.mojang.brigadier.builder.ArgumentBuilder;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import software.bernie.geckolib3.core.IAnimatable;
-import software.bernie.geckolib3.core.PlayState;
-import software.bernie.geckolib3.core.builder.AnimationBuilder;
-import software.bernie.geckolib3.core.controller.AnimationController;
-import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
-import software.bernie.geckolib3.core.manager.AnimationData;
-import software.bernie.geckolib3.core.manager.AnimationFactory;
-import software.bernie.geckolib3.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class ExampleS2Entity extends S2Mob implements IAnimatable {
-    private static final AnimationBuilder WALK_ANIM = new AnimationBuilder().addAnimation("walk");
-    private AnimationFactory factory = GeckoLibUtil.createFactory(this);
+public class ExampleS2Entity extends S2Mob implements GeoEntity {
+    private static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
+    private AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     public ExampleS2Entity(EntityType<? extends S2Mob> entityType, Level level) {
         super(entityType, level);
     }
@@ -46,12 +39,7 @@ public class ExampleS2Entity extends S2Mob implements IAnimatable {
         return false;
     }
 
-    @Override
-    public void registerControllers(AnimationData animationData) {
-        animationData.addAnimationController(new AnimationController<>(this, "Walking", 5, this::walkAnimController));
-    }
-
-    protected <E extends ExampleS2Entity> PlayState walkAnimController(final AnimationEvent<E> event) {
+    protected <E extends ExampleS2Entity> PlayState walkAnimController(final AnimationState<E> event) {
         if (event.isMoving()) {
             event.getController().setAnimation(WALK_ANIM);
 
@@ -62,7 +50,17 @@ public class ExampleS2Entity extends S2Mob implements IAnimatable {
     }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "Walking", 5, this::walkAnimController));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return null;
+    }
+
+    @Override
+    public double getTick(Object o) {
+        return 0;
     }
 }

@@ -36,6 +36,10 @@ repositories {
     maven {
         name = 'GeckoLib'
         url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content {
+            includeGroupByRegex("software\\.bernie.*")
+            includeGroup("com.eliotlash.mclib")
+        }
     }
 }
 
@@ -50,11 +54,11 @@ dependencies {
     modImplementation "maven.modrinth:modmenu:${project.modmenu_version}"
     implementation "com.electronwill.night-config:core:${project.night_config_version}"
     implementation "com.electronwill.night-config:toml:${project.night_config_version}"
-    modImplementation "net.minecraftforge:forgeconfigapiport-fabric:${project.forge_config_api_version}"
-    modImplementation "software.bernie.geckolib:geckolib-fabric-1.19:${project.geckolib_version}"
+    modApi "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${project.forge_config_api_version}"
+    modImplementation "software.bernie.geckolib:geckolib-fabric-1.19.4:${project.geckolib_version}"
 
     // Utility
-    modRuntimeOnly "curse.maven:worldedit-225608:3922622"
+    modLocalRuntime "curse.maven:worldedit-225608:4445118"
 
     mappings loom.layered() {
         officialMojangMappings()

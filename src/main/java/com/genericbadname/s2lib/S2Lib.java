@@ -5,6 +5,7 @@ import com.genericbadname.s2lib.config.CommonConfig;
 import com.genericbadname.s2lib.config.ServerConfig;
 import com.genericbadname.s2lib.example.entity.EntityRegistry;
 import com.genericbadname.s2lib.example.entity.ExampleS2Entity;
+import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
@@ -21,8 +22,8 @@ public class S2Lib implements ModInitializer {
     @Override
     public void onInitialize() {
         // register config
-        ModLoadingContext.registerConfig(MOD_ID, ModConfig.Type.SERVER, ServerConfig.SPEC);
-        ModLoadingContext.registerConfig(MOD_ID, ModConfig.Type.COMMON, CommonConfig.SPEC);
+        ForgeConfigRegistry.INSTANCE.register(MOD_ID, ModConfig.Type.SERVER, ServerConfig.SPEC);
+        ForgeConfigRegistry.INSTANCE.register(MOD_ID, ModConfig.Type.COMMON, CommonConfig.SPEC);
 
         // register debug commands
         CommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess, environment) -> {

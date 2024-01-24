@@ -196,10 +196,5 @@ public final class BetterBlockPos extends BlockPos {
     public BetterBlockPos offset(int dx, int dy, int dz) {
         return from(super.offset(dx, dy, dz));
     }
-
-    @Override
-    public BetterBlockPos offset(double dx, double dy, double dz) {
-        return from(super.offset(dx, dy, dz));
-    }
 }
 
