@@ -7,13 +7,16 @@ import com.genericbadname.s2lib.pathing.movement.Moves;
 import com.genericbadname.s2lib.pathing.movement.PositionValidity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.phys.Vec3;
 
 public class WalkMovement implements IMovement {
     @Override
     public void move(Mob mob, BlockPos pos) {
         float yRot = (float) Moves.rotFromPos(mob.blockPosition(), pos);
+        mob.move(MoverType.SELF, new Vec3(pos.getX()+0.5, pos.getY(), pos.getZ()+0.5).subtract(mob.position()));
 
-        mob.lerpTo(pos.getX()+0.5, pos.getY(), pos.getZ()+0.5, yRot, 0, 10, false);
+        mob.setYRot(yRot);
         mob.setYHeadRot(yRot);
     }
 
