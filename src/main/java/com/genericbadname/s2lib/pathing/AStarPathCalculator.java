@@ -2,17 +2,21 @@ package com.genericbadname.s2lib.pathing;
 
 import com.genericbadname.s2lib.S2Lib;
 import com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor;
+import com.genericbadname.s2lib.config.ServerConfig;
 import com.genericbadname.s2lib.pathing.movement.IMovement;
 import com.genericbadname.s2lib.pathing.movement.Moves;
 import com.genericbadname.s2lib.pathing.movement.PositionValidity;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.compress.utils.Lists;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor.HazardLevel;
 
@@ -59,7 +63,7 @@ public class AStarPathCalculator {
             }
 
             // go through each moveset to find the next best move type
-            for (Moves move : Moves.values()) {
+            for (Moves move : availableMoves()) {
                 IMovement movement = move.type;
                 // iterate over each step of the movement (used in multi-block checks like parkour jumps)
                 for (int step=0;step<move.steps;step++) {
@@ -133,20 +137,33 @@ public class AStarPathCalculator {
         map = new Long2ObjectOpenHashMap<>();
     }
 
+    // get available moves depending on config
+    private Set<Moves> availableMoves() {
+        Set<Moves> availableMoves = new ObjectOpenHashSet<>();
+
+        if (ServerConfig.ENABLE_WALKING.get()) {
+            availableMoves.addAll(Set.of(Moves.walking()));
+        }
+
+        if (ServerConfig.ENABLE_STEP_UP.get()) {
+            availableMoves.addAll(Set.of(Moves.stepUp()));
+        }
+
+        if (ServerConfig.ENABLE_PARKOUR.get()) {
+            availableMoves.addAll(Set.of(Moves.parkour()));
+        }
+
+        if (ServerConfig.ENABLE_FALLING.get()) {
+            availableMoves.addAll(Set.of(Moves.falling()));
+        }
+
+        return availableMoves;
+    }
+
     // debug
     private void logOut(boolean success, int numNodes, long startTime) {
         S2Lib.logInfo(success ? "Found a valid path to target" : "Failed to find a valid path to target");
         S2Lib.logInfo("Open set contains {} nodes", openSet.size());
         S2Lib.logInfo("Considered {} nodes per second", (int) (numNodes * 1.0 / ((System.currentTimeMillis() - startTime) / 1000F)));
-    }
-
-    private void debugMove(BetterBlockPos neighborPos, boolean pass) {
-        if (bakery.isPassable(neighborPos)) {
-            if (pass) {
-                bakery.getLevel().setBlock(neighborPos, Blocks.YELLOW_STAINED_GLASS.defaultBlockState(), 3);
-            } else {
-                //bakery.getLevel().setBlock(neighborPos, Blocks.RED_STAINED_GLASS.defaultBlockState(), 3);
-            }
-        }
     }
 }

@@ -56,7 +56,7 @@ public class ExampleS2Entity extends S2Mob implements GeoEntity {
 
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
-        return null;
+        return geoCache;
     }
 
     @Override

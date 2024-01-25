@@ -6,6 +6,8 @@
   "mixins": [
   ],
   "client": [
+    "render.MixinEntityRenderManager",
+    "render.MixinLevelRenderer"
   ],
   "injectors": {
     "defaultRequire": 1

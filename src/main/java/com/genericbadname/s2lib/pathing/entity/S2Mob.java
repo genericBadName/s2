@@ -1,18 +1,24 @@
 package com.genericbadname.s2lib.pathing.entity;
 
 import com.genericbadname.s2lib.S2Lib;
+import com.genericbadname.s2lib.config.CommonConfig;
+import com.genericbadname.s2lib.network.S2NetworkingConstants;
 import com.genericbadname.s2lib.pathing.AStarPathCalculator;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
-import com.genericbadname.s2lib.pathing.S2Node;
 import com.genericbadname.s2lib.pathing.S2Path;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 
-import java.util.List;
 import java.util.Optional;
 
 public abstract class S2Mob extends PathfinderMob {
@@ -20,12 +26,12 @@ public abstract class S2Mob extends PathfinderMob {
     public static final int FAIL_UPDATE_PENALTY = 60; // ticks
     private int updateTimer = RETRY_UPDATE_COOLDOWN;
     private final AStarPathCalculator calculator;
-    private Optional<S2Path> path;
+    private Optional<S2Path> potentialPath;
     private BetterBlockPos lastTracked;
     public S2Mob(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
         this.calculator = new AStarPathCalculator(level);
-        this.path = Optional.of(new S2Path());
+        this.potentialPath = Optional.of(new S2Path());
         this.lastTracked = BetterBlockPos.ORIGIN;
     }
 
@@ -40,16 +46,31 @@ public abstract class S2Mob extends PathfinderMob {
         if (updateTimer > 0) updateTimer--;
     }
 
-    public Optional<S2Path> getPath() {
-        return path;
+    public Optional<S2Path> getPotentialPath() {
+        return potentialPath;
     }
     public Optional<S2Path> calculateFromCurrentLocation(BetterBlockPos dest) {
-        path = calculator.calculate(BetterBlockPos.from(blockPosition()), dest);
+        potentialPath = calculator.calculate(BetterBlockPos.from(blockPosition()), dest);
 
-        if (path.isEmpty()) return path;
-        if (!path.get().isPossible()) updateTimer = FAIL_UPDATE_PENALTY; // stop constant failure updates
+        if (potentialPath.isEmpty()) return potentialPath;
+        S2Path path = potentialPath.get();
 
-        return path;
+        if (!path.isPossible()) updateTimer = FAIL_UPDATE_PENALTY; // stop constant failure updates
+
+        // send data to client for debug
+        if (CommonConfig.DEBUG_ENTITY_PATHS.get()) {
+            FriendlyByteBuf buf = PacketByteBufs.create();
+            buf.writeUUID(uuid);
+            path.serialize(buf);
+
+            for (ServerPlayer player : PlayerLookup.tracking(this)) {
+                ServerPlayNetworking.send(player, S2NetworkingConstants.RENDER_MOB_PATH, buf);
+            }
+
+            dispatchTrackingEntity(S2NetworkingConstants.RENDER_MOB_PATH, buf, this);
+        }
+
+        return potentialPath;
     }
 
     public void updatePath() {
@@ -57,7 +78,7 @@ public abstract class S2Mob extends PathfinderMob {
 
         LivingEntity target = getTarget();
         updateTimer = RETRY_UPDATE_COOLDOWN;
-        path = Optional.empty();
+        potentialPath = Optional.empty();
 
         // update path according to target position
         if (target != null) {
@@ -65,8 +86,29 @@ public abstract class S2Mob extends PathfinderMob {
                 S2Lib.logInfo("Updating path for {}", this);
 
                 lastTracked = BetterBlockPos.from(target.blockPosition());
-                path = calculateFromCurrentLocation(lastTracked);
+                potentialPath = calculateFromCurrentLocation(lastTracked);
             }
+        }
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        super.remove(reason);
+        FriendlyByteBuf buf = PacketByteBufs.create();
+        buf.writeUUID(uuid);
+
+        dispatchAll(S2NetworkingConstants.REMOVE_MOB_PATH, buf, getServer());
+    }
+
+    private static void dispatchTrackingEntity(ResourceLocation packet, FriendlyByteBuf payload, S2Mob mob) {
+        for (ServerPlayer player : PlayerLookup.tracking(mob)) {
+            ServerPlayNetworking.send(player, packet, payload);
+        }
+    }
+
+    private static void dispatchAll(ResourceLocation packet, FriendlyByteBuf payload, MinecraftServer server) {
+        for (ServerPlayer player : PlayerLookup.all(server)) {
+            ServerPlayNetworking.send(player, packet, payload);
         }
     }
 }

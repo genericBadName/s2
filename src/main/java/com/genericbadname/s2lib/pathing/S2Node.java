@@ -2,6 +2,7 @@ package com.genericbadname.s2lib.pathing;
 
 import com.genericbadname.s2lib.config.ServerConfig;
 import com.genericbadname.s2lib.pathing.movement.Moves;
+import net.minecraft.network.FriendlyByteBuf;
 
 /**
  * A singular node in an {@link S2Path}. Stores cost-related information and its parent node, for later traversal.
@@ -114,5 +115,18 @@ public class S2Node {
         //return Objects.equals(this.pos, other.pos) && Objects.equals(this.goal, other.goal);
 
         return pos.equals(other.pos);
+    }
+
+    public void serialize(FriendlyByteBuf buf) {
+        buf.writeBlockPos(pos);
+        buf.writeUtf(move.name());
+    }
+
+    public static S2Node deserialize(FriendlyByteBuf buf) {
+        try {
+            return new S2Node(BetterBlockPos.from(buf.readBlockPos()), Moves.valueOf(buf.readUtf()));
+        } catch(IndexOutOfBoundsException e) {
+            return null;
+        }
     }
 }

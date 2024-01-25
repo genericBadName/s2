@@ -1,11 +1,9 @@
 package com.genericbadname.s2lib.example.goal;
 
-import com.genericbadname.s2lib.S2Lib;
 import com.genericbadname.s2lib.pathing.S2Node;
 import com.genericbadname.s2lib.pathing.S2Path;
 import com.genericbadname.s2lib.pathing.entity.S2Mob;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,11 +36,11 @@ public class S2NearestAttackableTargetGoal<T extends LivingEntity> extends Neare
         super.start();
         s2Mob = (S2Mob) mob;
 
-        if (s2Mob.getPath().isEmpty()) return;
-        S2Path potentialPath = s2Mob.getPath().get();
+        if (s2Mob.getPotentialPath().isEmpty()) return;
+        S2Path potentialPath = s2Mob.getPotentialPath().get();
 
         if (potentialPath.isPossible()) {
-            currentPath = potentialPath.getPositions();
+            currentPath = potentialPath.getNodes();
             nextNode = currentPath.get(0);
         }
     }
@@ -80,8 +78,8 @@ public class S2NearestAttackableTargetGoal<T extends LivingEntity> extends Neare
 
     private void attemptPathUpdate() {
         s2Mob.updatePath();
-        if (s2Mob.getPath().isEmpty()) return;
-        currentPath = s2Mob.getPath().get().getPositions();
+        if (s2Mob.getPotentialPath().isEmpty()) return;
+        currentPath = s2Mob.getPotentialPath().get().getNodes();
         movingAlongPath = true;
     }
 

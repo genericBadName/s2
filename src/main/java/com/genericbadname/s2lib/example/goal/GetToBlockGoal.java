@@ -1,13 +1,10 @@
 package com.genericbadname.s2lib.example.goal;
 
-import com.genericbadname.s2lib.pathing.AStarPathCalculator;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.S2Node;
 import com.genericbadname.s2lib.pathing.S2Path;
 import com.genericbadname.s2lib.pathing.entity.S2Mob;
 import com.genericbadname.s2lib.pathing.movement.Moves;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 
 import java.util.EnumSet;
@@ -45,7 +42,7 @@ public class GetToBlockGoal extends Goal {
         Optional<S2Path> potentialPath = mob.calculateFromCurrentLocation(target.getPos());
         if (potentialPath.isEmpty()) return;
 
-        this.path = potentialPath.get().getPositions();
+        this.path = potentialPath.get().getNodes();
         walkingTo = path.get(0);
     }
 

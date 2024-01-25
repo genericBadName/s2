@@ -170,4 +170,56 @@ public enum Moves {
 
         return (x * -90) + (z < 0 ? 180 : 0);
     }
+
+    public static Moves[] walking() {
+        return new Moves[] {
+                WALK_NORTH,
+                WALK_SOUTH,
+                WALK_EAST,
+                WALK_WEST,
+                WALK_NORTHEAST,
+                WALK_NORTHWEST,
+                WALK_SOUTHEAST,
+                WALK_SOUTHWEST
+        };
+    }
+
+    public static Moves[] stepUp() {
+        return new Moves[] {
+                STEP_UP_NORTH,
+                STEP_UP_SOUTH,
+                STEP_UP_EAST,
+                STEP_UP_WEST,
+                STEP_UP_NORTHEAST,
+                STEP_UP_NORTHWEST,
+                STEP_UP_SOUTHEAST,
+                STEP_UP_SOUTHWEST
+        };
+    }
+
+    public static Moves[] parkour() {
+        return new Moves[] {
+                PARKOUR_NORTH,
+                PARKOUR_SOUTH,
+                PARKOUR_EAST,
+                PARKOUR_WEST,
+                PARKOUR_NORTHEAST,
+                PARKOUR_NORTHWEST,
+                PARKOUR_SOUTHEAST,
+                PARKOUR_SOUTHWEST
+        };
+    }
+
+    public static Moves[] falling() {
+        return new Moves[] {
+                FALL_NORTH,
+                FALL_SOUTH,
+                FALL_EAST,
+                FALL_WEST,
+                FALL_NORTHEAST,
+                FALL_NORTHWEST,
+                FALL_SOUTHEAST,
+                FALL_SOUTHWEST
+        };
+    }
 }

@@ -18,20 +18,22 @@ public class ServerConfig {
     public static final ForgeConfigSpec.ConfigValue<Double> COST_INF;
     public static final ForgeConfigSpec.ConfigValue<Double> DIAGONAL_COST_MULTIPLIER;
     // walking
+    public static final ForgeConfigSpec.ConfigValue<Boolean> ENABLE_WALKING;
     public static final ForgeConfigSpec.ConfigValue<Double> WALK_COST;
     // step up
+    public static final ForgeConfigSpec.ConfigValue<Boolean> ENABLE_STEP_UP;
     public static final ForgeConfigSpec.ConfigValue<Double> STEP_UP_COST;
     // parkour
+    public static final ForgeConfigSpec.ConfigValue<Boolean> ENABLE_PARKOUR;
     public static final ForgeConfigSpec.ConfigValue<Double> PARKOUR_COST;
     public static final ForgeConfigSpec.ConfigValue<Integer> MAX_JUMP_DISTANCE;
     public static final ForgeConfigSpec.ConfigValue<Integer> MAX_JUMP_HEIGHT;
     // freefall
+    public static final ForgeConfigSpec.ConfigValue<Boolean> ENABLE_FALLING;
     public static final ForgeConfigSpec.ConfigValue<Double> FALL_COST;
     public static final ForgeConfigSpec.ConfigValue<Integer> MAX_FALL_DISTANCE;
 
     static {
-        BUILDER.push("S2 Configs");
-
         BUILDER.push("Hazard Levels");
         UNKNOWN_COST_MULTIPLIER = BUILDER.define("unknown_cost_multiplier", 1.0);
         PASSABLE_COST_MULTIPLIER = BUILDER.define("passable_cost_multiplier", 1.0);
@@ -40,18 +42,24 @@ public class ServerConfig {
         AVOID_COST_MULTIPLIER = BUILDER.define("avoid_cost_multiplier", 15.0);
         AVOID_AT_ALL_COSTS_COST_MULTIPLIER = BUILDER.define("avoid_at_all_costs_multiplier", 50.0);
 
-        BUILDER.push("Pathfinder Config");
+        BUILDER.pop();
+
+        BUILDER.push("Pathfinder");
         COST_INF = BUILDER.define("cost_inf", 100000.0);
         DIAGONAL_COST_MULTIPLIER = BUILDER.define("diagonal_cost_multiplier", 1.25);
 
+        ENABLE_WALKING = BUILDER.define("enable_walking", true);
         WALK_COST = BUILDER.define("walk_cost", 20 / 4.317);
 
+        ENABLE_STEP_UP = BUILDER.define("enable_step_up", true);
         STEP_UP_COST = BUILDER.define("step_up_cost", (20 / 4.317) * 1.1);
 
+        ENABLE_PARKOUR = BUILDER.define("enable_parkour", true);
         PARKOUR_COST = BUILDER.define("parkour_cost", 2.0);
         MAX_JUMP_DISTANCE = BUILDER.define("max_jump_distance", 2);
         MAX_JUMP_HEIGHT = BUILDER.define("max_jump_height", 2);
 
+        ENABLE_FALLING = BUILDER.define("enable_falling", true);
         FALL_COST = BUILDER.define("fall_cost", 30.0);
         MAX_FALL_DISTANCE = BUILDER.define("max_fall_distance", 5);
 
