@@ -5,8 +5,7 @@
   "s2.config.pathfinder.hazard_level.potentially_avoid_cost_multiplier": "Potentially Hazardous Blocks",
   "s2.config.pathfinder.hazard_level.avoid_cost_multiplier": "Hazardous Blocks",
   "s2.config.pathfinder.hazard_level.avoid_at_all_costs_cost_multiplier": "Extremely Hazardous Blocks",
-  "s2.config.pathfinder.cost_inf": "Infinite Cost",
-  "s2.config.pathfinder.diagonal_cost_multiplier": "Diagonal Movement Cost",
+
   "s2.config.pathfinder.walking.enable_walking": "Enable Walking",
   "s2.config.pathfinder.walking.walk_cost": "Walking Cost",
   "s2.config.pathfinder.step_up.enable_step_up": "Enable Step Up",
@@ -17,5 +16,9 @@
   "s2.config.pathfinder.parkour.max_jump_height": "Max Jump Height",
   "s2.config.pathfinder.falling.enable_falling": "Enable Falling",
   "s2.config.pathfinder.falling.fall_cost": "Falling Cost",
-  "s2.config.pathfinder.falling.max_fall_distance": "Max Fall Distance"
+  "s2.config.pathfinder.falling.max_fall_distance": "Max Fall Distance",
+
+  "s2.config.pathfinder.cost_inf": "Infinite Cost",
+  "s2.config.pathfinder.diagonal_cost_multiplier": "Diagonal Movement Cost",
+  "s2.config.pathfinder.timeout_time": "Timeout Time"
 }

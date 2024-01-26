@@ -44,6 +44,6 @@ public class WalkMovement implements IMovement {
     }
 
     private static void maybeSendUpdate(BetterBlockPos pos, boolean valid, BakedLevelAccessor bakery) {
-        if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(pos, valid), bakery.getServer());
+        S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(pos, valid), bakery.getServer());
     }
 }

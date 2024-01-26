@@ -25,7 +25,7 @@ import java.util.Map;
 public class MixinDebugLevelRenderer {
     @Inject(method = "renderLevel", at = @At("TAIL"))
     public void renderLevel(PoseStack poseStack, float partialTick, long finishNanoTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci) {
-        IRenderer.startLines(Color.BLACK, 5, true);
+        IRenderer.startLines(Color.BLACK, 5, false);
 
         // render paths
         for (S2Path path : DebugRenderingCache.getPaths()) {

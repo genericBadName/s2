@@ -68,42 +68,34 @@ public enum Moves {
     FALL_NORTH(new Builder(new ParkourMovement(), ServerConfig.FALL_COST.get(), 0, -1, -1)
             .steps(ServerConfig.MAX_FALL_DISTANCE.get())
             .stepVec(0, -1, 0)
-            .stopCondition(PositionValidity.SUCCESS)
     ),
     FALL_SOUTH(new Builder(new ParkourMovement(), ServerConfig.FALL_COST.get(), 0, -1, 1)
             .steps(ServerConfig.MAX_FALL_DISTANCE.get())
             .stepVec(0, -1, 0)
-            .stopCondition(PositionValidity.SUCCESS)
     ),
     FALL_EAST(new Builder(new ParkourMovement(), ServerConfig.FALL_COST.get(), 1, -1, 0)
             .steps(ServerConfig.MAX_FALL_DISTANCE.get())
             .stepVec(0, -1, 0)
-            .stopCondition(PositionValidity.SUCCESS)
     ),
     FALL_WEST(new Builder(new ParkourMovement(), ServerConfig.FALL_COST.get(), -1, -1, 0)
             .steps(ServerConfig.MAX_FALL_DISTANCE.get())
             .stepVec(0, -1, 0)
-            .stopCondition(PositionValidity.SUCCESS)
     ),
     FALL_NORTHEAST(new Builder(new ParkourMovement(), ServerConfig.FALL_COST.get() * ServerConfig.DIAGONAL_COST_MULTIPLIER.get(), 1, -1, -1)
             .steps(ServerConfig.MAX_FALL_DISTANCE.get())
             .stepVec(0, -1, 0)
-            .stopCondition(PositionValidity.SUCCESS)
     ),
     FALL_NORTHWEST(new Builder(new ParkourMovement(), ServerConfig.FALL_COST.get() * ServerConfig.DIAGONAL_COST_MULTIPLIER.get(), -1, -1, 1)
             .steps(ServerConfig.MAX_FALL_DISTANCE.get())
             .stepVec(0, -1, 0)
-            .stopCondition(PositionValidity.SUCCESS)
     ),
     FALL_SOUTHEAST(new Builder(new ParkourMovement(), ServerConfig.FALL_COST.get() * ServerConfig.DIAGONAL_COST_MULTIPLIER.get(), 1, -1, 1)
             .steps(ServerConfig.MAX_FALL_DISTANCE.get())
             .stepVec(0, -1, 0)
-            .stopCondition(PositionValidity.SUCCESS)
     ),
     FALL_SOUTHWEST(new Builder(new ParkourMovement(), ServerConfig.FALL_COST.get() * ServerConfig.DIAGONAL_COST_MULTIPLIER.get(), -1, -1, 1)
             .steps(ServerConfig.MAX_FALL_DISTANCE.get())
             .stepVec(0, -1, 0)
-            .stopCondition(PositionValidity.SUCCESS)
     );
 
     public final IMovement type;

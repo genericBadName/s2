@@ -24,10 +24,9 @@ import static com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor.HazardLeve
 
 public class AStarPathCalculator {
     private static final double minimumImprovement = 0.01;
-    private static final long timeoutTime = 2 * 1000; // in ms
-
     private BinaryHeapOpenSet openSet;
     private Long2ObjectOpenHashMap<S2Node> map;
+    private long startTime;
 
     private final BakedLevelAccessor bakery;
 
@@ -44,7 +43,7 @@ public class AStarPathCalculator {
         S2Lib.logInfo("Starting pathfinder from {} to {} in {}", startPos, endPos, bakery);
         if (startPos == null || endPos == null) return Optional.empty();
 
-        long startTime = System.currentTimeMillis();
+        startTime = System.currentTimeMillis();
         int numNodes = 1;
 
         // create and add start node
@@ -54,7 +53,7 @@ public class AStarPathCalculator {
         map.put(BetterBlockPos.longHash(startPos), start);
 
         // start looping through nodes
-        while (!openSet.isEmpty() && System.currentTimeMillis() - startTime <= timeoutTime) {
+        while (!openSet.isEmpty() && shouldContinueRunning()) {
             S2Node current = openSet.removeLowest(); // get lowest f-score
 
             // if at goal, stop searching and retrace path
@@ -68,15 +67,14 @@ public class AStarPathCalculator {
             for (Moves move : availableMoves()) {
                 IMovement movement = move.type;
                 // iterate over each step of the movement (used in multi-block checks like parkour jumps)
-                for (int step=0;step<move.steps;step++) {
-                    BetterBlockPos neighborPos = current.getPos().offset(move.offset);
-                    //S2Lib.logInfo("current pos: {}", neighborPos);
+                for (int step = 0; step < move.steps; step++) {
+                    BetterBlockPos neighborPos = current.getPos().offset(move.stepVec).offset(move.offset);
 
                     // check if neighbor is valid, otherwise skip node
                     // TODO: possibly cache this result in the bakery for faster lookup?
                     PositionValidity validity = movement.isValidPosition(bakery, neighborPos);
                     if (validity != PositionValidity.SUCCESS) {
-                        if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, false), bakery.getServer());
+                        S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, false), bakery.getServer());
                         if (validity == move.stopCondition) break;
 
                         continue;
@@ -90,7 +88,6 @@ public class AStarPathCalculator {
 
                     // this is a better path, go for it!
                     if (neighbor.getGCost() - tentativeGCost > minimumImprovement) {
-                        //debugMove(neighborPos, true);
                         neighbor.setParent(currentHash);
                         neighbor.setGCost(tentativeGCost);
                         neighbor.setHCost(neighbor.getPos().distSqr(endPos));
@@ -105,7 +102,7 @@ public class AStarPathCalculator {
                         }
 
                         // for debug :)
-                        if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, true), bakery.getServer());
+                        S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, true), bakery.getServer());
                     }
                 }
             }
@@ -175,5 +172,10 @@ public class AStarPathCalculator {
         S2Lib.logInfo(success ? "Found a valid path to target" : "Failed to find a valid path to target");
         S2Lib.logInfo("Open set contains {} nodes", openSet.size());
         S2Lib.logInfo("Considered {} nodes per second", (int) (numNodes * 1.0 / ((System.currentTimeMillis() - startTime) / 1000F)));
+    }
+
+    private boolean shouldContinueRunning() {
+        if (ServerConfig.TIMEOUT_TIME.get() == -1) return true;
+        return System.currentTimeMillis() - startTime <= ServerConfig.TIMEOUT_TIME.get();
     }
 }

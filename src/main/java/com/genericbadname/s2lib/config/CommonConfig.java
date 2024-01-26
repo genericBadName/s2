@@ -12,7 +12,7 @@ public class CommonConfig {
     public static final ForgeConfigSpec.ConfigValue<Boolean> DEBUG_PATH_CALCULATIONS;
 
     static {
-        BUILDER.push("Debug Configs");
+        BUILDER.push("Debug");
 
         DEBUG_LOGGING = BUILDER.define("debug_logging", false);
         DEBUG_ENTITY_PATHS = BUILDER.define("debug_entity_paths", false);

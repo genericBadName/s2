@@ -189,12 +189,12 @@ public final class BetterBlockPos extends BlockPos {
 
     @Override
     public BetterBlockPos offset(Vec3i vector) {
-        return from(super.offset(vector));
+        return offset(vector.getX(), vector.getY(), vector.getZ());
     }
 
     @Override
     public BetterBlockPos offset(int dx, int dy, int dz) {
-        return from(super.offset(dx, dy, dz));
+        return new BetterBlockPos(this.getX() + dx, this.getY() + dy, this.getZ() + dz);
     }
 }
 
