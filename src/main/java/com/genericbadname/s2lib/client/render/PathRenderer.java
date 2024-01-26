@@ -33,13 +33,14 @@ public final class PathRenderer implements IRenderer {
         List<S2Node> nodes = path.getNodes();
         Iterator<S2Node> iterator = nodes.iterator();
 
-        IRenderer.startLines(Color.RED, 5, true);
         S2Node current = null;
 
         while (iterator.hasNext()) {
             if (current == null) current = iterator.next();
 
+            if (!iterator.hasNext()) break;
             S2Node next = iterator.next();
+
             BlockPos pos1 = current.getPos();
             BlockPos pos2 = next.getPos();
 
@@ -47,8 +48,6 @@ public final class PathRenderer implements IRenderer {
             emitPathLine(stack, pos1.getX(), pos1.getY(), pos1.getZ(), pos2.getX(), pos2.getY(), pos2.getZ(), offset);
             current = next;
         }
-
-        IRenderer.endLines(true);
     }
 
     private static void emitPathLine(PoseStack stack, double x1, double y1, double z1, double x2, double y2, double z2, double offset) {

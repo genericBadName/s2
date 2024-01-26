@@ -3,8 +3,10 @@ package com.genericbadname.s2lib.client;
 import com.genericbadname.s2lib.example.entity.EntityRegistry;
 import com.genericbadname.s2lib.example.entity.ExampleS2Renderer;
 import com.genericbadname.s2lib.network.S2NetworkingConstants;
+import com.genericbadname.s2lib.network.packet.ClearNodesS2CPacket;
 import com.genericbadname.s2lib.network.packet.RemoveMobPathS2CPacket;
 import com.genericbadname.s2lib.network.packet.RenderMobPathS2CPacket;
+import com.genericbadname.s2lib.network.packet.RenderNodeUpdateS2CPacket;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -18,7 +20,10 @@ public class S2libClient implements ClientModInitializer {
     public void onInitializeClient() {
         EntityRendererRegistry.register(EntityRegistry.EXAMPLE, ExampleS2Renderer::new);
 
+        // networking listeners
         ClientPlayNetworking.registerGlobalReceiver(S2NetworkingConstants.RENDER_MOB_PATH, RenderMobPathS2CPacket::runClient);
         ClientPlayNetworking.registerGlobalReceiver(S2NetworkingConstants.REMOVE_MOB_PATH, RemoveMobPathS2CPacket::runClient);
+        ClientPlayNetworking.registerGlobalReceiver(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket::runClient);
+        ClientPlayNetworking.registerGlobalReceiver(S2NetworkingConstants.CLEAR_NODES, ClearNodesS2CPacket::runClient);
     }
 }

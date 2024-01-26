@@ -1,6 +1,10 @@
 package com.genericbadname.s2lib.pathing.movement.type;
 
 import com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor;
+import com.genericbadname.s2lib.config.CommonConfig;
+import com.genericbadname.s2lib.network.S2NetworkingConstants;
+import com.genericbadname.s2lib.network.S2NetworkingUtil;
+import com.genericbadname.s2lib.network.packet.RenderNodeUpdateS2CPacket;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.movement.IMovement;
 import com.genericbadname.s2lib.pathing.movement.Moves;
@@ -22,10 +26,24 @@ public class WalkMovement implements IMovement {
 
     @Override
     public PositionValidity isValidPosition(BakedLevelAccessor bakery, BetterBlockPos pos) {
-        if (!bakery.isPassable(pos)) return PositionValidity.FAIL_BLOCKED; // ensure foot is passable
-        if (!bakery.isPassable(pos.offset(0, 1, 0))) return PositionValidity.FAIL_BLOCKED; // ensure head is passable
-        if (!bakery.isWalkable(pos.offset(0, -1, 0))) return PositionValidity.FAIL_MISSING_BLOCK; // ensure stepping on block is possible
+        if (!bakery.isPassable(pos)) {
+            maybeSendUpdate(pos, false, bakery);
+            return PositionValidity.FAIL_BLOCKED; // ensure foot is passable
+        }
+        if (!bakery.isPassable(pos.above())) {
+            maybeSendUpdate(pos.above(), false, bakery);
+            return PositionValidity.FAIL_BLOCKED; // ensure head is passable
+        }
+        if (!bakery.isWalkable(pos.below())) {
+            maybeSendUpdate(pos.below(), false, bakery);
+            return PositionValidity.FAIL_MISSING_BLOCK; // ensure stepping on block is possible
+        }
 
+        maybeSendUpdate(pos, true, bakery);
         return PositionValidity.SUCCESS;
+    }
+
+    private static void maybeSendUpdate(BetterBlockPos pos, boolean valid, BakedLevelAccessor bakery) {
+        if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(pos, valid), bakery.getServer());
     }
 }

@@ -1,7 +1,7 @@
 package com.genericbadname.s2lib.network.packet;
 
 import com.genericbadname.s2lib.S2Lib;
-import com.genericbadname.s2lib.client.render.PathRenderingCache;
+import com.genericbadname.s2lib.client.render.DebugRenderingCache;
 import com.genericbadname.s2lib.pathing.S2Path;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.Minecraft;
@@ -25,6 +25,6 @@ public class RenderMobPathS2CPacket{
 
         S2Lib.logInfo("Recieved path packet for UUID {}", uuid);
 
-        PathRenderingCache.putPath(uuid, path);
+        DebugRenderingCache.putPath(uuid, path);
     }
 }

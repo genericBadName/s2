@@ -2,15 +2,17 @@ package com.genericbadname.s2lib.pathing;
 
 import com.genericbadname.s2lib.S2Lib;
 import com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor;
+import com.genericbadname.s2lib.config.CommonConfig;
 import com.genericbadname.s2lib.config.ServerConfig;
+import com.genericbadname.s2lib.network.S2NetworkingConstants;
+import com.genericbadname.s2lib.network.S2NetworkingUtil;
+import com.genericbadname.s2lib.network.packet.RenderNodeUpdateS2CPacket;
 import com.genericbadname.s2lib.pathing.movement.IMovement;
 import com.genericbadname.s2lib.pathing.movement.Moves;
 import com.genericbadname.s2lib.pathing.movement.PositionValidity;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.compress.utils.Lists;
 
 import java.util.Collections;
@@ -73,7 +75,12 @@ public class AStarPathCalculator {
                     // check if neighbor is valid, otherwise skip node
                     // TODO: possibly cache this result in the bakery for faster lookup?
                     PositionValidity validity = movement.isValidPosition(bakery, neighborPos);
-                    if (validity.equals(move.stopCondition) || (move.stopCondition.equals(PositionValidity.NONE) && validity.ordinal() > 1)) break;
+                    if (validity != PositionValidity.SUCCESS) {
+                        if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, false), bakery.getServer());
+                        if (validity == move.stopCondition) break;
+
+                        continue;
+                    }
 
                     long currentHash = BetterBlockPos.longHash(current.getPos());
                     S2Node neighbor = getNodeAtPosition(neighborPos, BetterBlockPos.longHash(neighborPos), currentHash, move);
@@ -96,6 +103,9 @@ public class AStarPathCalculator {
                         } else {
                             openSet.insert(neighbor);
                         }
+
+                        // for debug :)
+                        if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, true), bakery.getServer());
                     }
                 }
             }

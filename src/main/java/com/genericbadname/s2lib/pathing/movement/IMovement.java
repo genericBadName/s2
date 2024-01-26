@@ -14,9 +14,5 @@ import java.util.List;
 public interface IMovement {
     void move(Mob mob, BlockPos pos);
 
-    default double cost(BetterBlockPos start, BetterBlockPos end) {
-        return start.distSqr(end);
-    }
-
     PositionValidity isValidPosition(BakedLevelAccessor bakery, BetterBlockPos pos);
 }

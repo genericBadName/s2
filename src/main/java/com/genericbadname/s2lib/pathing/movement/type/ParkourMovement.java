@@ -12,8 +12,8 @@ public class ParkourMovement extends WalkMovement {
         Vec3 vec = calculateLaunchVec(mob.position(), Vec3.atCenterOf(pos), 20, -0.08, 0.98);
         mob.setDeltaMovement(vec);
 
-        //mob.setYRot(yRot);
-        //mob.setYHeadRot(yRot);
+        mob.setYRot(yRot);
+        mob.setYHeadRot(yRot);
 
         //LogManager.getLogger().info("TEST TEST AAA: {}", calculateLaunchVec(new Vec3(2, -58, 1), new Vec3(2, -58, 3), 20, -0.08, 0.98));
     }

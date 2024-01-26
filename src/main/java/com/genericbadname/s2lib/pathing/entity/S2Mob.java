@@ -3,6 +3,7 @@ package com.genericbadname.s2lib.pathing.entity;
 import com.genericbadname.s2lib.S2Lib;
 import com.genericbadname.s2lib.config.CommonConfig;
 import com.genericbadname.s2lib.network.S2NetworkingConstants;
+import com.genericbadname.s2lib.network.S2NetworkingUtil;
 import com.genericbadname.s2lib.pathing.AStarPathCalculator;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.S2Path;
@@ -67,7 +68,7 @@ public abstract class S2Mob extends PathfinderMob {
                 ServerPlayNetworking.send(player, S2NetworkingConstants.RENDER_MOB_PATH, buf);
             }
 
-            dispatchTrackingEntity(S2NetworkingConstants.RENDER_MOB_PATH, buf, this);
+            S2NetworkingUtil.dispatchTrackingEntity(S2NetworkingConstants.RENDER_MOB_PATH, buf, this);
         }
 
         return potentialPath;
@@ -97,18 +98,7 @@ public abstract class S2Mob extends PathfinderMob {
         FriendlyByteBuf buf = PacketByteBufs.create();
         buf.writeUUID(uuid);
 
-        dispatchAll(S2NetworkingConstants.REMOVE_MOB_PATH, buf, getServer());
-    }
-
-    private static void dispatchTrackingEntity(ResourceLocation packet, FriendlyByteBuf payload, S2Mob mob) {
-        for (ServerPlayer player : PlayerLookup.tracking(mob)) {
-            ServerPlayNetworking.send(player, packet, payload);
-        }
-    }
-
-    private static void dispatchAll(ResourceLocation packet, FriendlyByteBuf payload, MinecraftServer server) {
-        for (ServerPlayer player : PlayerLookup.all(server)) {
-            ServerPlayNetworking.send(player, packet, payload);
-        }
+        S2NetworkingUtil.dispatchAll(S2NetworkingConstants.REMOVE_MOB_PATH, buf, getServer());
+        S2NetworkingUtil.dispatchAll(S2NetworkingConstants.CLEAR_NODES, PacketByteBufs.empty(), getServer());
     }
 }

@@ -3,6 +3,7 @@ package com.genericbadname.s2lib.bakery.eval;
 import com.genericbadname.s2lib.config.ServerConfig;
 import com.genericbadname.s2lib.data.tag.ModBlockTags;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -44,6 +45,9 @@ public class BakedLevelAccessor {
     @Deprecated
     public Level getLevel() {
         return level;
+    }
+    public MinecraftServer getServer() {
+        return level.getServer();
     }
 
     public enum HazardLevel {

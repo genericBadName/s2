@@ -27,7 +27,7 @@ public enum Moves {
     STEP_UP_SOUTHWEST(new Builder(new WalkMovement(), ServerConfig.STEP_UP_COST.get() * ServerConfig.DIAGONAL_COST_MULTIPLIER.get(), -1, 1, 1)),
     PARKOUR_NORTH(new Builder(new ParkourMovement(), ServerConfig.PARKOUR_COST.get(), 0, 0, -1)
             .steps(ServerConfig.MAX_JUMP_DISTANCE.get())
-            .stepVec(0, 0, 1)
+            .stepVec(0, 0, -1)
             .stopCondition(PositionValidity.FAIL_BLOCKED)
     ),
     PARKOUR_SOUTH(new Builder(new ParkourMovement(), ServerConfig.PARKOUR_COST.get(), 0, 0, 1)
@@ -42,17 +42,17 @@ public enum Moves {
     ),
     PARKOUR_WEST(new Builder(new ParkourMovement(), ServerConfig.PARKOUR_COST.get(), -1, 0, 0)
             .steps(ServerConfig.MAX_JUMP_DISTANCE.get())
-            .stepVec(1, 0, 0)
+            .stepVec(-1, 0, 0)
             .stopCondition(PositionValidity.FAIL_BLOCKED)
     ),
     PARKOUR_NORTHEAST(new Builder(new ParkourMovement(), ServerConfig.PARKOUR_COST.get() * ServerConfig.DIAGONAL_COST_MULTIPLIER.get(), 1, 0, -1)
             .steps(ServerConfig.MAX_JUMP_DISTANCE.get())
-            .stepVec(1, 0, 1)
+            .stepVec(1, 0, -1)
             .stopCondition(PositionValidity.FAIL_BLOCKED)
     ),
     PARKOUR_NORTHWEST(new Builder(new ParkourMovement(), ServerConfig.PARKOUR_COST.get() * ServerConfig.DIAGONAL_COST_MULTIPLIER.get(), -1, 0, -1)
             .steps(ServerConfig.MAX_JUMP_DISTANCE.get()).
-            stepVec(1, 0, 1)
+            stepVec(-1, 0, -1)
             .stopCondition(PositionValidity.FAIL_BLOCKED)
     ),
     PARKOUR_SOUTHEAST(new Builder(new ParkourMovement(), ServerConfig.PARKOUR_COST.get() * ServerConfig.DIAGONAL_COST_MULTIPLIER.get(), 1, 0, 1)
@@ -62,7 +62,7 @@ public enum Moves {
     ),
     PARKOUR_SOUTHWEST(new Builder(new ParkourMovement(), ServerConfig.PARKOUR_COST.get() * ServerConfig.DIAGONAL_COST_MULTIPLIER.get(), -1, 0, 1)
             .steps(ServerConfig.MAX_JUMP_DISTANCE.get())
-            .stepVec(1, 0, 1)
+            .stepVec(-1, 0, 1)
             .stopCondition(PositionValidity.FAIL_BLOCKED)
     ),
     FALL_NORTH(new Builder(new ParkourMovement(), ServerConfig.FALL_COST.get(), 0, -1, -1)
@@ -128,7 +128,7 @@ public enum Moves {
         private final Vec3i offset;
         private int steps = 1;
         private Vec3i stepVec = Vec3i.ZERO;
-        private PositionValidity stopCondition = PositionValidity.NONE;
+        private PositionValidity stopCondition = PositionValidity.SUCCESS;
 
         public Builder(IMovement type, double cost, Vec3i offset) {
             this.type = type;

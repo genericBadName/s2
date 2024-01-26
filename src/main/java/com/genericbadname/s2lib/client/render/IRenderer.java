@@ -13,6 +13,7 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 import java.awt.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Environment(EnvType.CLIENT)
 public interface IRenderer {
