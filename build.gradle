@@ -59,6 +59,7 @@ dependencies {
 
     // Utility
     modLocalRuntime "curse.maven:worldedit-225608:4445118"
+    modLocalRuntime "maven.modrinth:forge-config-screens:v6.0.0-1.19.4-Fabric"
 
     mappings loom.layered() {
         officialMojangMappings()
