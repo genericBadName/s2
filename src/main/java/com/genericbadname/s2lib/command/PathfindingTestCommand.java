@@ -16,11 +16,11 @@ import java.util.List;
 
 public class PathfindingTestCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, boolean dedicated) {
-        dispatcher.register(((Commands.literal("pathtest")
-                .requires((source) -> source.hasPermission(2)))
+        dispatcher.register(Commands.literal("pathtest")
+                .requires((source) -> source.hasPermission(2))
                     .then(Commands.argument("start", BlockPosArgument.blockPos())
                             .then(Commands.argument("end", BlockPosArgument.blockPos())
-                                    .executes((ctx) -> run(ctx.getSource(), BlockPosArgument.getLoadedBlockPos(ctx, "start"), BlockPosArgument.getLoadedBlockPos(ctx, "end")))))));
+                                    .executes((ctx) -> run(ctx.getSource(), BlockPosArgument.getLoadedBlockPos(ctx, "start"), BlockPosArgument.getLoadedBlockPos(ctx, "end"))))));
     }
 
     public static int run(CommandSourceStack ctx, BlockPos start, BlockPos end) {

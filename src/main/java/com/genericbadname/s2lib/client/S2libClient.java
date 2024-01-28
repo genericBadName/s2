@@ -1,5 +1,7 @@
 package com.genericbadname.s2lib.client;
 
+import com.genericbadname.s2lib.command.ClearDebugRenderCommand;
+import com.genericbadname.s2lib.command.PathfindingTestCommand;
 import com.genericbadname.s2lib.example.entity.EntityRegistry;
 import com.genericbadname.s2lib.example.entity.ExampleS2Renderer;
 import com.genericbadname.s2lib.network.S2NetworkingConstants;
@@ -10,8 +12,11 @@ import com.genericbadname.s2lib.network.packet.RenderNodeUpdateS2CPacket;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
 @Environment(EnvType.CLIENT)
 public class S2libClient implements ClientModInitializer {
@@ -25,5 +30,10 @@ public class S2libClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(S2NetworkingConstants.REMOVE_MOB_PATH, RemoveMobPathS2CPacket::runClient);
         ClientPlayNetworking.registerGlobalReceiver(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket::runClient);
         ClientPlayNetworking.registerGlobalReceiver(S2NetworkingConstants.CLEAR_NODES, ClearNodesS2CPacket::runClient);
+
+        // client commands
+        ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) -> {
+            ClearDebugRenderCommand.register(dispatcher);
+        }));
     }
 }

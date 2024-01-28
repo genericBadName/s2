@@ -64,10 +64,6 @@ public abstract class S2Mob extends PathfinderMob {
             buf.writeUUID(uuid);
             path.serialize(buf);
 
-            for (ServerPlayer player : PlayerLookup.tracking(this)) {
-                ServerPlayNetworking.send(player, S2NetworkingConstants.RENDER_MOB_PATH, buf);
-            }
-
             S2NetworkingUtil.dispatchTrackingEntity(S2NetworkingConstants.RENDER_MOB_PATH, buf, this);
         }
 
@@ -95,10 +91,8 @@ public abstract class S2Mob extends PathfinderMob {
     @Override
     public void remove(RemovalReason reason) {
         super.remove(reason);
-        FriendlyByteBuf buf = PacketByteBufs.create();
-        buf.writeUUID(uuid);
 
-        S2NetworkingUtil.dispatchAll(S2NetworkingConstants.REMOVE_MOB_PATH, buf, getServer());
+        S2NetworkingUtil.dispatchAll(S2NetworkingConstants.REMOVE_MOB_PATH, PacketByteBufs.create().writeUUID(uuid), getServer());
         S2NetworkingUtil.dispatchAll(S2NetworkingConstants.CLEAR_NODES, PacketByteBufs.empty(), getServer());
     }
 }

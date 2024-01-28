@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -33,12 +34,20 @@ public class MixinDebugLevelRenderer {
         }
 
         // render calculated blocks
-        for (Map.Entry<BetterBlockPos, Boolean> block : DebugRenderingCache.getBlocks()) {
-            boolean valid = block.getValue();
+        if (DebugRenderingCache.getBlocks() == null) {
+            IRenderer.endLines(true);
+
+            return;
+        }
+
+        for (Map.Entry<BetterBlockPos, Boolean> entry : DebugRenderingCache.getBlocks()) {
+            boolean valid = entry.getValue();
             Color color = valid ? Color.GREEN : Color.RED;
 
+            BetterBlockPos pos = entry.getKey();
+
             IRenderer.glColor(color, 0.4F);
-            IRenderer.emitAABB(poseStack, AABB.of(new BoundingBox(block.getKey())));
+            IRenderer.emitAABB(poseStack, new AABB(new Vec3(pos.x+0.25, pos.y+0.25, pos.z+0.25), new Vec3(pos.x+0.75, pos.y+0.75, pos.z+0.75)));
         }
 
         IRenderer.endLines(true);

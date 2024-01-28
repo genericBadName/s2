@@ -21,6 +21,8 @@ public class DebugRenderingCache {
         activePaths.put(uuid, path);
     }
     public static void putBlock(BetterBlockPos pos, boolean valid) {
+        if (pos == null) return;
+
         calculatedBlocks.put(pos, valid);
     }
 
@@ -31,6 +33,7 @@ public class DebugRenderingCache {
         calculatedBlocks.remove(pos);
     }
 
+    public static void clearPaths() {activePaths.clear();}
     public static void clearBlocks() {
         calculatedBlocks.clear();
     }
@@ -40,6 +43,6 @@ public class DebugRenderingCache {
     }
 
     public static ObjectSet<Map.Entry<BetterBlockPos, Boolean>> getBlocks() {
-        return calculatedBlocks.entrySet();
+        return (calculatedBlocks.size() > 0) ? calculatedBlocks.entrySet() : null;
     }
 }

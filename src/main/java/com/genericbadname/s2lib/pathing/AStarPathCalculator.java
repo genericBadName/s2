@@ -10,6 +10,7 @@ import com.genericbadname.s2lib.network.packet.RenderNodeUpdateS2CPacket;
 import com.genericbadname.s2lib.pathing.movement.IMovement;
 import com.genericbadname.s2lib.pathing.movement.Moves;
 import com.genericbadname.s2lib.pathing.movement.PositionValidity;
+import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.world.level.Level;
@@ -24,6 +25,8 @@ import static com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor.HazardLeve
 
 public class AStarPathCalculator {
     private static final double minimumImprovement = 0.01;
+    private static final ImmutableSet<Moves> availableMoves;
+
     private BinaryHeapOpenSet openSet;
     private Long2ObjectOpenHashMap<S2Node> map;
     private long startTime;
@@ -34,6 +37,29 @@ public class AStarPathCalculator {
         this.bakery = new BakedLevelAccessor(level);
         this.openSet = new BinaryHeapOpenSet();
         this.map = new Long2ObjectOpenHashMap<>();
+    }
+
+    // set available moves based on config
+    static {
+        Set<Moves> movesToSet = new ObjectOpenHashSet<>();
+
+        if (ServerConfig.ENABLE_WALKING.get()) {
+            movesToSet.addAll(Set.of(Moves.walking()));
+        }
+
+        if (ServerConfig.ENABLE_STEP_UP.get()) {
+            movesToSet.addAll(Set.of(Moves.stepUp()));
+        }
+
+        if (ServerConfig.ENABLE_PARKOUR.get()) {
+            movesToSet.addAll(Set.of(Moves.parkour()));
+        }
+
+        if (ServerConfig.ENABLE_FALLING.get()) {
+            movesToSet.addAll(Set.of(Moves.falling()));
+        }
+
+        availableMoves = ImmutableSet.copyOf(movesToSet);
     }
 
     // run until completion
@@ -64,17 +90,17 @@ public class AStarPathCalculator {
             }
 
             // go through each moveset to find the next best move type
-            for (Moves move : availableMoves()) {
-                IMovement movement = move.type;
+            for (Moves move : availableMoves) {
                 // iterate over each step of the movement (used in multi-block checks like parkour jumps)
                 for (int step = 0; step < move.steps; step++) {
-                    BetterBlockPos neighborPos = current.getPos().offset(move.stepVec).offset(move.offset);
+                    BetterBlockPos neighborPos = current.getPos().offset(move.stepVec.multiply(step)).offset(move.offset);
 
                     // check if neighbor is valid, otherwise skip node
                     // TODO: possibly cache this result in the bakery for faster lookup?
-                    PositionValidity validity = movement.isValidPosition(bakery, neighborPos);
+                    PositionValidity validity = move.positionValidator.apply(bakery, neighborPos);
+                    if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, validity == PositionValidity.SUCCESS), bakery.getServer());
+
                     if (validity != PositionValidity.SUCCESS) {
-                        S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, false), bakery.getServer());
                         if (validity == move.stopCondition) break;
 
                         continue;
@@ -102,7 +128,7 @@ public class AStarPathCalculator {
                         }
 
                         // for debug :)
-                        S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, true), bakery.getServer());
+                        if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, true), bakery.getServer());
                     }
                 }
             }
@@ -142,29 +168,6 @@ public class AStarPathCalculator {
     private void reset() {
         openSet = new BinaryHeapOpenSet();
         map = new Long2ObjectOpenHashMap<>();
-    }
-
-    // get available moves depending on config
-    private Set<Moves> availableMoves() {
-        Set<Moves> availableMoves = new ObjectOpenHashSet<>();
-
-        if (ServerConfig.ENABLE_WALKING.get()) {
-            availableMoves.addAll(Set.of(Moves.walking()));
-        }
-
-        if (ServerConfig.ENABLE_STEP_UP.get()) {
-            availableMoves.addAll(Set.of(Moves.stepUp()));
-        }
-
-        if (ServerConfig.ENABLE_PARKOUR.get()) {
-            availableMoves.addAll(Set.of(Moves.parkour()));
-        }
-
-        if (ServerConfig.ENABLE_FALLING.get()) {
-            availableMoves.addAll(Set.of(Moves.falling()));
-        }
-
-        return availableMoves;
     }
 
     // debug

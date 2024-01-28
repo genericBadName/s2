@@ -13,6 +13,4 @@ import java.util.List;
 
 public interface IMovement {
     void move(Mob mob, BlockPos pos);
-
-    PositionValidity isValidPosition(BakedLevelAccessor bakery, BetterBlockPos pos);
 }

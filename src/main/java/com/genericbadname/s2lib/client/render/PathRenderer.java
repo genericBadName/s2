@@ -8,6 +8,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.awt.*;
 import java.util.Iterator;
@@ -31,22 +33,17 @@ public final class PathRenderer implements IRenderer {
 
     public static void renderPath(PoseStack stack, S2Path path, float offset) {
         List<S2Node> nodes = path.getNodes();
-        Iterator<S2Node> iterator = nodes.iterator();
 
-        S2Node current = null;
-
-        while (iterator.hasNext()) {
-            if (current == null) current = iterator.next();
-
-            if (!iterator.hasNext()) break;
-            S2Node next = iterator.next();
+        for (int i=0;i<nodes.size()-2;i++) {
+            S2Node current = nodes.get(i);
+            S2Node next = nodes.get(i+1);
 
             BlockPos pos1 = current.getPos();
             BlockPos pos2 = next.getPos();
 
             IRenderer.glColor(movementToColor(current.getMove()),0.4f);
             emitPathLine(stack, pos1.getX(), pos1.getY(), pos1.getZ(), pos2.getX(), pos2.getY(), pos2.getZ(), offset);
-            current = next;
+            IRenderer.emitAABB(stack, new AABB(new Vec3(pos1.getX()+0.25, pos1.getY()+0.25, pos1.getZ()+0.25), new Vec3(pos1.getX()+0.75, pos1.getY()+0.75, pos1.getZ()+0.75)));
         }
     }
 
@@ -90,8 +87,8 @@ public final class PathRenderer implements IRenderer {
     private static Color movementToColor(Moves move) {
         return switch(move) {
             case START -> Color.GREEN;
-            case WALK_NORTH, WALK_SOUTH, WALK_EAST, WALK_WEST, WALK_NORTHEAST, WALK_NORTHWEST, WALK_SOUTHEAST, WALK_SOUTHWEST -> Color.GRAY;
-            case STEP_UP_NORTH, STEP_UP_SOUTH, STEP_UP_EAST, STEP_UP_WEST, STEP_UP_NORTHEAST, STEP_UP_NORTHWEST, STEP_UP_SOUTHEAST, STEP_UP_SOUTHWEST -> Color.LIGHT_GRAY;
+            case WALK_NORTH, WALK_SOUTH, WALK_EAST, WALK_WEST, WALK_NORTHEAST, WALK_NORTHWEST, WALK_SOUTHEAST, WALK_SOUTHWEST -> Color.BLACK;
+            case STEP_UP_NORTH, STEP_UP_SOUTH, STEP_UP_EAST, STEP_UP_WEST, STEP_UP_NORTHEAST, STEP_UP_NORTHWEST, STEP_UP_SOUTHEAST, STEP_UP_SOUTHWEST -> Color.WHITE;
             case PARKOUR_NORTH, PARKOUR_SOUTH, PARKOUR_EAST, PARKOUR_WEST, PARKOUR_NORTHEAST, PARKOUR_NORTHWEST, PARKOUR_SOUTHEAST, PARKOUR_SOUTHWEST -> Color.MAGENTA;
             case FALL_NORTH, FALL_SOUTH, FALL_EAST, FALL_WEST, FALL_NORTHEAST, FALL_NORTHWEST, FALL_SOUTHEAST, FALL_SOUTHWEST -> Color.PINK;
         };
