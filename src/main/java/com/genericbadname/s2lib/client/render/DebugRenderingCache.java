@@ -18,6 +18,8 @@ public class DebugRenderingCache {
     private static final Object2ObjectOpenHashMap<BetterBlockPos, Boolean> calculatedBlocks = new Object2ObjectOpenHashMap<>();
 
     public static void putPath(UUID uuid, S2Path path) {
+        if (path == null) return;
+
         activePaths.put(uuid, path);
     }
     public static void putBlock(BetterBlockPos pos, boolean valid) {
@@ -43,6 +45,6 @@ public class DebugRenderingCache {
     }
 
     public static ObjectSet<Map.Entry<BetterBlockPos, Boolean>> getBlocks() {
-        return (calculatedBlocks.size() > 0) ? calculatedBlocks.entrySet() : null;
+        return calculatedBlocks.entrySet();
     }
 }

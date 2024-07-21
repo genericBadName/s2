@@ -1,5 +1,6 @@
 package com.genericbadname.s2lib.client.render;
 
+import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.S2Node;
 import com.genericbadname.s2lib.pathing.S2Path;
 import com.genericbadname.s2lib.pathing.movement.IMovement;
@@ -34,16 +35,16 @@ public final class PathRenderer implements IRenderer {
     public static void renderPath(PoseStack stack, S2Path path, float offset) {
         List<S2Node> nodes = path.getNodes();
 
-        for (int i=0;i<nodes.size()-2;i++) {
-            S2Node current = nodes.get(i);
-            S2Node next = nodes.get(i+1);
+        for (int i=1;i<nodes.size();i++) {
+            S2Node currentNode = nodes.get(i);
+            S2Node prevNode = nodes.get(i-1);
 
-            BlockPos pos1 = current.getPos();
-            BlockPos pos2 = next.getPos();
+            BlockPos currentPos = currentNode.getPos();
+            BlockPos prevPos = prevNode.getPos();
 
-            IRenderer.glColor(movementToColor(current.getMove()),0.4f);
-            emitPathLine(stack, pos1.getX(), pos1.getY(), pos1.getZ(), pos2.getX(), pos2.getY(), pos2.getZ(), offset);
-            IRenderer.emitAABB(stack, new AABB(new Vec3(pos1.getX()+0.25, pos1.getY()+0.25, pos1.getZ()+0.25), new Vec3(pos1.getX()+0.75, pos1.getY()+0.75, pos1.getZ()+0.75)));
+            IRenderer.glColor(movementToColor(currentNode.getMove()),0.4f);
+            emitPathLine(stack, prevPos.getX(), prevPos.getY(), prevPos.getZ(), currentPos.getX(), currentPos.getY(), currentPos.getZ(), offset);
+            IRenderer.emitAABB(stack, new AABB(Vec3.atLowerCornerWithOffset(prevPos, 0.25, 0.25, 0.25), Vec3.atLowerCornerWithOffset(prevPos, 0.75, 0.75, 0.75)));
         }
     }
 

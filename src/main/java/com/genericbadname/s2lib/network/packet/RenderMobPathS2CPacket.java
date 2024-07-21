@@ -23,7 +23,7 @@ public class RenderMobPathS2CPacket{
             return;
         }
 
-        S2Lib.logInfo("Recieved path packet for UUID {}", uuid);
+        //S2Lib.logInfo("Recieved path packet for UUID {}", uuid);
 
         DebugRenderingCache.putPath(uuid, path);
     }

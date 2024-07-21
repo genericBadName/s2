@@ -5,9 +5,11 @@ import com.genericbadname.s2lib.pathing.S2Path;
 import com.genericbadname.s2lib.pathing.entity.S2Mob;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 public class S2NearestAttackableTargetGoal<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
@@ -54,9 +56,12 @@ public class S2NearestAttackableTargetGoal<T extends LivingEntity> extends Neare
     }
 
     // TODO: make this logic less hideous
+    AtomicInteger stallTick = new AtomicInteger(0);
+    boolean moveQueued = false;
     @Override
     public void tick() {
         super.tick();
+        stallTick.getAndDecrement();
 
         if (!movingAlongPath) attemptPathUpdate();
 
@@ -68,11 +73,19 @@ public class S2NearestAttackableTargetGoal<T extends LivingEntity> extends Neare
 
         nextNode = currentPath.get(0);
 
-        if (s2Mob.blockPosition().equals(nextNode.getPos())) {
+        if (s2Mob.blockPosition().equals(nextNode.getPos()) && s2Mob.position().y == nextNode.getPos().y) {
             currentPath.remove(0);
             nextNode = currentPath.get(0);
 
+            mob.setPos(s2Mob.blockPosition().getX() + 0.5, s2Mob.blockPosition().getY(), s2Mob.blockPosition().getZ() + 0.5);
+
+            stallTick.set(1);
+            moveQueued = true;
+        }
+
+        if (stallTick.get() <= 0 && moveQueued) {
             nextNode.getMove().type.move(mob, nextNode.getPos());
+            moveQueued = false;
         }
     }
 

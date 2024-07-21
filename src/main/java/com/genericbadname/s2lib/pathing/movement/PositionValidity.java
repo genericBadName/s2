@@ -30,7 +30,7 @@ public enum PositionValidity {
         }
 
         public static PositionValidity northeast(BakedLevelAccessor bakery, BetterBlockPos pos) {
-            if (!bakery.isPassable(pos.offset(0, -1, 0))) {
+            if (!bakery.isWalkable(pos.offset(0, -1, 0))) {
                 maybeSendUpdate(pos, false, bakery);
                 return PositionValidity.FAIL_MISSING_BLOCK; // ensure ground is walkable
             }
@@ -52,7 +52,7 @@ public enum PositionValidity {
         }
 
         public static PositionValidity northwest(BakedLevelAccessor bakery, BetterBlockPos pos) {
-            if (!bakery.isPassable(pos.offset(0, -1, 0))) {
+            if (!bakery.isWalkable(pos.offset(0, -1, 0))) {
                 maybeSendUpdate(pos, false, bakery);
                 return PositionValidity.FAIL_MISSING_BLOCK; // ensure ground is walkable
             }
@@ -74,7 +74,7 @@ public enum PositionValidity {
         }
 
         public static PositionValidity southeast(BakedLevelAccessor bakery, BetterBlockPos pos) {
-            if (!bakery.isPassable(pos.offset(0, -1, 0))) {
+            if (!bakery.isWalkable(pos.offset(0, -1, 0))) {
                 maybeSendUpdate(pos, false, bakery);
                 return PositionValidity.FAIL_MISSING_BLOCK; // ensure ground is walkable
             }
@@ -96,7 +96,7 @@ public enum PositionValidity {
         }
 
         public static PositionValidity southwest(BakedLevelAccessor bakery, BetterBlockPos pos) {
-            if (!bakery.isPassable(pos.offset(0, -1, 0))) {
+            if (!bakery.isWalkable(pos.offset(0, -1, 0))) {
                 maybeSendUpdate(pos, false, bakery);
                 return PositionValidity.FAIL_MISSING_BLOCK; // ensure ground is walkable
             }

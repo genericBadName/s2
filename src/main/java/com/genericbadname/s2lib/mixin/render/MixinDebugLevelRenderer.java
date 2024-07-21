@@ -1,5 +1,6 @@
 package com.genericbadname.s2lib.mixin.render;
 
+import com.genericbadname.s2lib.S2Lib;
 import com.genericbadname.s2lib.client.render.IRenderer;
 import com.genericbadname.s2lib.client.render.PathRenderer;
 import com.genericbadname.s2lib.client.render.DebugRenderingCache;
@@ -29,18 +30,17 @@ public class MixinDebugLevelRenderer {
         IRenderer.startLines(Color.BLACK, 5, false);
 
         // render paths
+        //S2Lib.logInfo("{}, {}", DebugRenderingCache.getPaths(), DebugRenderingCache.getBlocks());
+
         for (S2Path path : DebugRenderingCache.getPaths()) {
             PathRenderer.renderPath(poseStack, path, 0.5F);
         }
 
         // render calculated blocks
-        if (DebugRenderingCache.getBlocks() == null) {
-            IRenderer.endLines(true);
-
-            return;
-        }
-
         for (Map.Entry<BetterBlockPos, Boolean> entry : DebugRenderingCache.getBlocks()) {
+            if (entry == null) return;
+            if (entry.getKey() == null || entry.getValue() == null) return;
+
             boolean valid = entry.getValue();
             Color color = valid ? Color.GREEN : Color.RED;
 

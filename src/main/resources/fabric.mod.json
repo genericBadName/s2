@@ -27,5 +27,6 @@
     "fabric": "*",
     "minecraft": "1.19.4",
     "forgeconfigapiport": "6.0.2"
-  }
+  },
+  "accessWidener": "s2lib.accesswidener"
 }

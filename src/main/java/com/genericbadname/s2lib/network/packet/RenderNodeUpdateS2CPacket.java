@@ -22,7 +22,7 @@ public class RenderNodeUpdateS2CPacket {
             return;
         }
 
-        S2Lib.logInfo("Recieved path packet for position {}", blockPos);
+        //S2Lib.logInfo("Recieved path packet for position {}", blockPos);
 
         DebugRenderingCache.putBlock(blockPos, valid);
     }

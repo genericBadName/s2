@@ -20,7 +20,7 @@ public class RemoveMobPathS2CPacket {
             return;
         }
 
-        S2Lib.logInfo("Recieved path removal packet for UUID {}", uuid);
+        //S2Lib.logInfo("Recieved path removal packet for UUID {}", uuid);
 
         DebugRenderingCache.removePath(uuid);
     }
