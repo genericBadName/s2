@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.ChunkPos;
 
 /**
  * A better BlockPos that has fewer hash collisions (and slightly more performant offsets)

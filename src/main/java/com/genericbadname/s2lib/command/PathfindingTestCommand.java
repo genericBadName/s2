@@ -27,9 +27,10 @@ public class PathfindingTestCommand {
         try {
             S2Lib.logInfo("running pathfinder");
             // loop through path
-            AStarPathCalculator calculator = new AStarPathCalculator(ctx.getLevel());
+            AStarPathCalculator calculator = new AStarPathCalculator();
 
-            List<S2Node> nodes = calculator.calculate(BetterBlockPos.from(start), BetterBlockPos.from(end)).orElseThrow().getNodes();
+
+            List<S2Node> nodes = calculator.calculate(BetterBlockPos.from(start), BetterBlockPos.from(end), ctx.getServer().getBakery(ctx.getLevel().dimension())).orElseThrow().getNodes();
             S2Lib.logInfo("Got node list of size {}", nodes.size());
 
             for (S2Node node : nodes) {

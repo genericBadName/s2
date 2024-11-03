@@ -53,6 +53,7 @@ dependencies {
     // Fabric
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
 
     // Dependency Mods
     modImplementation "maven.modrinth:modmenu:${project.modmenu_version}"
@@ -69,6 +70,10 @@ dependencies {
         officialMojangMappings()
         parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:${project.parchment_version}@zip")
     }
+}
+
+test {
+    useJUnitPlatform()
 }
 
 processResources {

@@ -1,34 +1,21 @@
 package com.genericbadname.s2lib.pathing.entity;
 
 import com.genericbadname.s2lib.S2Lib;
+import com.genericbadname.s2lib.bakery.storage.Bakery;
 import com.genericbadname.s2lib.config.CommonConfig;
 import com.genericbadname.s2lib.network.S2NetworkingConstants;
 import com.genericbadname.s2lib.network.S2NetworkingUtil;
 import com.genericbadname.s2lib.pathing.AStarPathCalculator;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.S2Path;
-import com.google.common.util.concurrent.AtomicDouble;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.animal.FlyingAnimal;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
@@ -37,19 +24,18 @@ public abstract class S2Mob extends PathfinderMob {
     public static final int RETRY_UPDATE_COOLDOWN = 20; // ticks
     public static final int FAIL_UPDATE_PENALTY = 60; // ticks
     private int updateTimer = RETRY_UPDATE_COOLDOWN;
-    private final AStarPathCalculator calculator;
+    private AStarPathCalculator calculator;
     private Optional<S2Path> potentialPath;
     private BetterBlockPos lastTracked;
 
     public S2Mob(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
-        this.calculator = new AStarPathCalculator(level);
-        this.potentialPath = Optional.of(new S2Path());
-        this.lastTracked = BetterBlockPos.ORIGIN;
-    }
 
-    public AStarPathCalculator getCalculator() {
-        return calculator;
+        if (!level.isClientSide()) {
+            this.calculator = new AStarPathCalculator();
+            this.potentialPath = Optional.of(new S2Path());
+            this.lastTracked = BetterBlockPos.ORIGIN;
+        }
     }
 
 
@@ -188,7 +174,16 @@ public abstract class S2Mob extends PathfinderMob {
         return potentialPath;
     }
     public Optional<S2Path> calculateFromCurrentLocation(BetterBlockPos dest) {
-        potentialPath = calculator.calculate(BetterBlockPos.from(blockPosition()), dest);
+        Bakery bakery = ((ServerLevel)level).getServer().getBakery(level.dimension());
+
+        if (bakery == null) {
+            S2Lib.LOGGER.warn("Entity {} tried to pathfind with a nonexistent bakery. If the world was just loaded, ignore this.", uuid);
+            updateTimer = FAIL_UPDATE_PENALTY;
+
+            return Optional.empty();
+        }
+
+        potentialPath = calculator.calculate(BetterBlockPos.from(blockPosition()), dest, bakery);
 
         if (potentialPath.isEmpty()) return potentialPath;
         S2Path path = potentialPath.get();

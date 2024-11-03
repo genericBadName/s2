@@ -1,18 +1,19 @@
 package com.genericbadname.s2lib.pathing;
 
 import com.genericbadname.s2lib.S2Lib;
-import com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor;
+import com.genericbadname.s2lib.bakery.HazardLevel;
+import com.genericbadname.s2lib.bakery.storage.Bakery;
 import com.genericbadname.s2lib.config.CommonConfig;
 import com.genericbadname.s2lib.config.ServerConfig;
 import com.genericbadname.s2lib.network.S2NetworkingConstants;
 import com.genericbadname.s2lib.network.S2NetworkingUtil;
 import com.genericbadname.s2lib.network.packet.RenderNodeUpdateS2CPacket;
-import com.genericbadname.s2lib.pathing.movement.IMovement;
 import com.genericbadname.s2lib.pathing.movement.Moves;
 import com.genericbadname.s2lib.pathing.movement.PositionValidity;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import org.apache.commons.compress.utils.Lists;
 
@@ -20,8 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import static com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor.HazardLevel;
 
 public class AStarPathCalculator {
     private static final double minimumImprovement = 0.01;
@@ -31,10 +30,7 @@ public class AStarPathCalculator {
     private Long2ObjectOpenHashMap<S2Node> map;
     private long startTime;
 
-    private final BakedLevelAccessor bakery;
-
-    public AStarPathCalculator(Level level) {
-        this.bakery = new BakedLevelAccessor(level);
+    public AStarPathCalculator() {
         this.openSet = new BinaryHeapOpenSet();
         this.map = new Long2ObjectOpenHashMap<>();
     }
@@ -52,7 +48,8 @@ public class AStarPathCalculator {
         }
 
         if (ServerConfig.ENABLE_PARKOUR.get()) {
-            movesToSet.addAll(Set.of(Moves.parkour()));
+            // removed parkour. this has caused me so much headache.
+            //movesToSet.addAll(Set.of(Moves.parkour()));
         }
 
         if (ServerConfig.ENABLE_FALLING.get()) {
@@ -63,7 +60,7 @@ public class AStarPathCalculator {
     }
 
     // run until completion
-    public Optional<S2Path> calculate(BetterBlockPos startPos, BetterBlockPos endPos) {
+    public Optional<S2Path> calculate(BetterBlockPos startPos, BetterBlockPos endPos, Bakery bakery) {
         reset();
 
         S2Lib.logInfo("Starting pathfinder from {} to {} in {}", startPos, endPos, bakery);

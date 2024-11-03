@@ -1,6 +1,6 @@
 package com.genericbadname.s2lib.pathing.movement;
 
-import com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor;
+import com.genericbadname.s2lib.bakery.storage.Bakery;
 import com.genericbadname.s2lib.config.CommonConfig;
 import com.genericbadname.s2lib.network.S2NetworkingConstants;
 import com.genericbadname.s2lib.network.S2NetworkingUtil;
@@ -14,7 +14,7 @@ public enum PositionValidity {
     FAIL_UNKNOWN; // failure, for any other reason
 
     public static class PositionValidator {
-        public static PositionValidity cardinal(BakedLevelAccessor bakery, BetterBlockPos pos) {
+        public static PositionValidity cardinal(Bakery bakery, BetterBlockPos pos) {
             if (!bakery.isPassable(pos) || !bakery.isPassable(pos.above())) {
                 maybeSendUpdate(pos, false, bakery);
                 return PositionValidity.FAIL_BLOCKED; // ensure foot is passable
@@ -29,7 +29,7 @@ public enum PositionValidity {
             return PositionValidity.SUCCESS;
         }
 
-        public static PositionValidity northeast(BakedLevelAccessor bakery, BetterBlockPos pos) {
+        public static PositionValidity northeast(Bakery bakery, BetterBlockPos pos) {
             if (!bakery.isWalkable(pos.offset(0, -1, 0))) {
                 maybeSendUpdate(pos, false, bakery);
                 return PositionValidity.FAIL_MISSING_BLOCK; // ensure ground is walkable
@@ -51,7 +51,7 @@ public enum PositionValidity {
             return PositionValidity.SUCCESS;
         }
 
-        public static PositionValidity northwest(BakedLevelAccessor bakery, BetterBlockPos pos) {
+        public static PositionValidity northwest(Bakery bakery, BetterBlockPos pos) {
             if (!bakery.isWalkable(pos.offset(0, -1, 0))) {
                 maybeSendUpdate(pos, false, bakery);
                 return PositionValidity.FAIL_MISSING_BLOCK; // ensure ground is walkable
@@ -73,7 +73,7 @@ public enum PositionValidity {
             return PositionValidity.SUCCESS;
         }
 
-        public static PositionValidity southeast(BakedLevelAccessor bakery, BetterBlockPos pos) {
+        public static PositionValidity southeast(Bakery bakery, BetterBlockPos pos) {
             if (!bakery.isWalkable(pos.offset(0, -1, 0))) {
                 maybeSendUpdate(pos, false, bakery);
                 return PositionValidity.FAIL_MISSING_BLOCK; // ensure ground is walkable
@@ -95,7 +95,7 @@ public enum PositionValidity {
             return PositionValidity.SUCCESS;
         }
 
-        public static PositionValidity southwest(BakedLevelAccessor bakery, BetterBlockPos pos) {
+        public static PositionValidity southwest(Bakery bakery, BetterBlockPos pos) {
             if (!bakery.isWalkable(pos.offset(0, -1, 0))) {
                 maybeSendUpdate(pos, false, bakery);
                 return PositionValidity.FAIL_MISSING_BLOCK; // ensure ground is walkable
@@ -117,7 +117,7 @@ public enum PositionValidity {
             return PositionValidity.SUCCESS;
         }
 
-        protected static void maybeSendUpdate(BetterBlockPos pos, boolean valid, BakedLevelAccessor bakery) {
+        protected static void maybeSendUpdate(BetterBlockPos pos, boolean valid, Bakery bakery) {
             if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(pos, valid), bakery.getServer());
         }
     }

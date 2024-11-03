@@ -28,5 +28,10 @@
     "minecraft": "1.19.4",
     "forgeconfigapiport": "6.0.2"
   },
+  "custom": {
+    "loom:injected_interfaces": {
+      "net/minecraft/server/MinecraftServer": ["com/genericbadname/s2lib/bakery/storage/BakeryAttachment"]
+    }
+  },
   "accessWidener": "s2lib.accesswidener"
 }

@@ -4,6 +4,7 @@
   "package": "com.genericbadname.s2lib.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "chunk.MinecraftServerMixin"
   ],
   "client": [
     "render.MixinDebugLevelRenderer",

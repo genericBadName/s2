@@ -1,6 +1,8 @@
 package com.genericbadname.s2lib;
 
+import com.genericbadname.s2lib.bakery.storage.BakeryAttachment;
 import com.genericbadname.s2lib.command.PathfindingTestCommand;
+import com.genericbadname.s2lib.command.BakeryCommand;
 import com.genericbadname.s2lib.config.CommonConfig;
 import com.genericbadname.s2lib.config.ServerConfig;
 import com.genericbadname.s2lib.example.entity.EntityRegistry;
@@ -8,9 +10,9 @@ import com.genericbadname.s2lib.example.entity.ExampleS2Entity;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,6 +34,19 @@ public class S2Lib implements ModInitializer {
 
         // register debug entity
         FabricDefaultAttributeRegistry.register(EntityRegistry.EXAMPLE, ExampleS2Entity.createAttributes().build());
+
+        // register commands
+        CommandRegistrationCallback.EVENT.register((((dispatcher, registryAccess, environment) -> {
+            BakeryCommand.register(dispatcher);
+        })));
+
+        // bakery lifecycle
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            server.initBakeries();
+            server.loadBakeries();
+        });
+        ServerLifecycleEvents.SERVER_STOPPING.register(BakeryAttachment::writeBakeries);
+        ServerLifecycleEvents.SERVER_STOPPED.register(BakeryAttachment::clearBakeries);
     }
 
     public static ResourceLocation asResource(String name) {

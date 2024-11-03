@@ -1,6 +1,6 @@
 package com.genericbadname.s2lib.pathing.movement;
 
-import com.genericbadname.s2lib.bakery.eval.BakedLevelAccessor;
+import com.genericbadname.s2lib.bakery.storage.Bakery;
 import com.genericbadname.s2lib.config.ServerConfig;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.movement.type.FallMovement;
@@ -194,7 +194,7 @@ public enum Moves {
     public final int steps;
     public final Vec3i stepVec;
     public final PositionValidity stopCondition;
-    public final BiFunction<BakedLevelAccessor, BetterBlockPos, PositionValidity> positionValidator;
+    public final BiFunction<Bakery, BetterBlockPos, PositionValidity> positionValidator;
 
     Moves(Builder builder) {
         this.type = builder.type;
@@ -213,7 +213,7 @@ public enum Moves {
         private int steps = 1;
         private Vec3i stepVec = Vec3i.ZERO;
         private PositionValidity stopCondition = PositionValidity.SUCCESS;
-        private BiFunction<BakedLevelAccessor, BetterBlockPos, PositionValidity> positionValidator = (a, b) -> PositionValidity.FAIL_UNKNOWN;
+        private BiFunction<Bakery, BetterBlockPos, PositionValidity> positionValidator = (a, b) -> PositionValidity.FAIL_UNKNOWN;
 
         public Builder(IMovement type, double cost) {
             this.type = type;
@@ -250,7 +250,7 @@ public enum Moves {
             return this;
         }
 
-        public Builder positionValidator(BiFunction<BakedLevelAccessor, BetterBlockPos, PositionValidity> positionValidator) {
+        public Builder positionValidator(BiFunction<Bakery, BetterBlockPos, PositionValidity> positionValidator) {
             this.positionValidator = positionValidator;
             return this;
         }
