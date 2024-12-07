@@ -1,6 +1,7 @@
 package com.genericbadname.s2lib.mixin.chunk;
 
 import com.genericbadname.s2lib.bakery.storage.Bakery;
+import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,7 +18,7 @@ public class ServerLevelMixin {
         Bakery bakery = thiz.getServer().getBakery(thiz.dimension());
 
         if (bakery != null) {
-            //bakery.updateHazardLevel(BetterBlockPos.from(pos), newState);
+            bakery.updateHazardLevel(BetterBlockPos.from(pos), newState);
         }
     }
 }

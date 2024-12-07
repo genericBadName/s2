@@ -18,8 +18,7 @@ class HazardLevelTest {
     static void beforeAll() {
         for (int i=0;i<testHazards.length;i++) {
             testHazards[i] = HazardLevel.values()[random.nextInt(HazardLevel.values().length)];
-        }// TODO: FIX TESTS GRAHHHH
-
+        }
         S2Lib.LOGGER.info("Hazard Array: {}", Arrays.toString(testHazards));
     }
 

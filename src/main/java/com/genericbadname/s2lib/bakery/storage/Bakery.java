@@ -4,24 +4,24 @@ import com.genericbadname.s2lib.S2Lib;
 import com.genericbadname.s2lib.bakery.HazardLevel;
 import com.genericbadname.s2lib.data.tag.ModBlockTags;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
-import com.google.common.io.Files;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
-import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.storage.LevelResource;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -35,16 +35,14 @@ public class Bakery {
     public static final String BAKERY_PATH = "s2bakery";
     public static final String LOAF_EXTENSION = "s2loaf";
 
-    private static final FilenameFilter filter = (dir, name) -> name.endsWith(LOAF_EXTENSION);
-
     public Bakery(ServerLevel level) {
         this.level = level;
-        this.basePath = level.getServer().getWorldPath(LevelResource.ROOT) + File.separator + BAKERY_PATH;
+        String root = level.getServer().getWorldPath(LevelResource.ROOT).toString();
+        this.basePath = root.substring(0, root.length()-1) + BAKERY_PATH;
         this.dimPath = basePath + File.separator + level.dimension().location().getNamespace() + File.separator + level.dimension().location().getPath();
     }
 
     // loads bakery from disk to memory for this dimension
-    // TODO: acquire lock on file(s) to prevent concurrent shenanigans
     private static final int X_ROWS = 16;
     private static final int Z_SIZE = 6;
     private Loaf read(@NotNull File loafFile) {
@@ -53,9 +51,19 @@ public class Bakery {
 
         if (potentialPos == null) return null;
 
-        try {
-            byte[] bytes = FileUtils.readFileToByteArray(loafFile);
+        try (RandomAccessFile raf = new RandomAccessFile(loafFile, "rw"); FileChannel channel = raf.getChannel()) {
+            // acquire lock on file to prevent concurrent modification
+            FileLock lock = null;
 
+            try {
+                lock = channel.tryLock();
+            } catch (OverlappingFileLockException e) {
+                S2Lib.LOGGER.error("Tried to read from an already locked file {}: {}", loafFile.getPath(), e.getMessage());
+            }
+
+            byte[] bytes = Files.readAllBytes(loafFile.toPath());
+
+            // decode bytes
             int height = bytes.length / (X_ROWS * Z_SIZE);
             HazardLevel[][][] hazards = new HazardLevel[height][16][16];
 
@@ -69,6 +77,11 @@ public class Bakery {
             }
 
             loaf = new Loaf(hazards, potentialPos);
+
+            // close resources
+            if (lock != null) {
+                lock.release();
+            }
         } catch (IOException e) {
             S2Lib.LOGGER.error("Encountered an IOException trying to read from {}: {}", loafFile.getPath(), e.getMessage());
         }
@@ -103,15 +116,34 @@ public class Bakery {
         ByteBuffer buffer = ByteBuffer.allocate(6 * 16 * loaf.chunkHazard().length);
         HazardLevel[][][] hazard = loaf.chunkHazard();
 
-        for (int y=0;y<hazard.length;y++) {
-            for (int x=0;x<16;x++) { // iterate by X-coordinate. important!!
-                buffer.put(HazardLevel.toBytes16(hazard[y][x]));
+        for (HazardLevel[][] hazardLevels : hazard) {
+            for (int x = 0; x < 16; x++) { // iterate by X-coordinate. important!!
+                buffer.put(HazardLevel.toBytes16(hazardLevels[x]));
             }
         }
 
         // write loaf file
         try {
-            Files.write(buffer.array(), loafFile);
+            if (!loafFile.exists()) loafFile.createNewFile();
+        } catch(IOException e) {
+            S2Lib.LOGGER.error("Could not create a new loaf file at {}: {}", loafFile.getPath(), e.getMessage());
+        }
+
+        try (RandomAccessFile raf = new RandomAccessFile(loafFile, "rw"); FileChannel channel = raf.getChannel()) {
+            // acquire lock on file to prevent concurrent modification
+            FileLock lock = null;
+
+            try {
+                lock = channel.tryLock();
+                raf.write(buffer.array());
+            } catch (OverlappingFileLockException e) {
+                S2Lib.LOGGER.error("Tried to write to an already locked file {}: {}", loafFile.getPath(), e.getMessage());
+            }
+
+            // close resources
+            if (lock != null) {
+                lock.release();
+            }
         } catch (IOException e) {
             S2Lib.LOGGER.error("Encountered an error trying to write to {}: {}", loafFile.getPath(), e.getMessage());
         }
