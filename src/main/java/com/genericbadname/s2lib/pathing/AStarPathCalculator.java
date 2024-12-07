@@ -107,7 +107,7 @@ public class AStarPathCalculator {
                     S2Node neighbor = getNodeAtPosition(neighborPos, BetterBlockPos.longHash(neighborPos), currentHash, move);
 
                     HazardLevel hazardLevel = bakery.getHazardLevel(neighborPos);
-                    double tentativeGCost = (current.getGCost() + move.cost) * hazardLevel.costMultiplier;
+                    double tentativeGCost = (current.getGCost() + move.cost) * hazardLevel.getCostMultiplier();
 
                     // this is a better path, go for it!
                     if (neighbor.getGCost() - tentativeGCost > minimumImprovement) {

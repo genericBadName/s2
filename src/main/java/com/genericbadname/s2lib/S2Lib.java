@@ -10,7 +10,6 @@ import com.genericbadname.s2lib.example.entity.ExampleS2Entity;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.resources.ResourceLocation;
@@ -42,14 +41,9 @@ public class S2Lib implements ModInitializer {
         })));
 
         // bakery lifecycle
-        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            server.initBakeries();
-            server.loadBakeries();
-        });
+        ServerLifecycleEvents.SERVER_STARTED.register(BakeryAttachment::initBakeries);
         ServerLifecycleEvents.SERVER_STOPPING.register(BakeryAttachment::writeBakeries);
         ServerLifecycleEvents.SERVER_STOPPED.register(BakeryAttachment::clearBakeries);
-
-        ServerChunkEvents.CHUNK_LOAD.register((level, chunk) -> level.getServer().getBakery(level.dimension()).scanChunk(chunk.getPos()));
     }
 
     public static ResourceLocation asResource(String name) {

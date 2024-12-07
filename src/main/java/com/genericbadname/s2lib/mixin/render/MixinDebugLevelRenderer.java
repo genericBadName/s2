@@ -7,6 +7,8 @@ import com.genericbadname.s2lib.client.render.DebugRenderingCache;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.S2Path;
 import com.mojang.blaze3d.vertex.PoseStack;
+import it.unimi.dsi.fastutil.longs.Long2BooleanMap;
+import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -37,14 +39,13 @@ public class MixinDebugLevelRenderer {
         }
 
         // render calculated blocks
-        for (Map.Entry<BetterBlockPos, Boolean> entry : DebugRenderingCache.getBlocks()) {
+        for (Object2BooleanMap.Entry<BetterBlockPos> entry : DebugRenderingCache.getBlocks()) {
             if (entry == null) return;
-            if (entry.getKey() == null || entry.getValue() == null) return;
 
-            boolean valid = entry.getValue();
+            boolean valid = entry.getBooleanValue();
             Color color = valid ? Color.GREEN : Color.RED;
 
-            BetterBlockPos pos = entry.getKey();
+            BetterBlockPos pos = new BetterBlockPos(entry.getKey());
 
             IRenderer.glColor(color, 0.4F);
             IRenderer.emitAABB(poseStack, new AABB(new Vec3(pos.x+0.25, pos.y+0.25, pos.z+0.25), new Vec3(pos.x+0.75, pos.y+0.75, pos.z+0.75)));

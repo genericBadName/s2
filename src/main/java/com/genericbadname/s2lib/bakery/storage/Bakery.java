@@ -6,6 +6,7 @@ import com.genericbadname.s2lib.data.tag.ModBlockTags;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.google.common.io.Files;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -28,6 +29,7 @@ public class Bakery {
     private final ServerLevel level;
     private final Long2ObjectLinkedOpenHashMap<Loaf> loafMap = new Long2ObjectLinkedOpenHashMap<>();
     private final String basePath;
+    private final String dimPath;
 
     // .minecraft/saves/SAVENAME/s2bakery/NAMESPACE/DIMENSION/rX.rZ/cX.cZ.s2loaf
     public static final String BAKERY_PATH = "s2bakery";
@@ -38,42 +40,18 @@ public class Bakery {
     public Bakery(ServerLevel level) {
         this.level = level;
         this.basePath = level.getServer().getWorldPath(LevelResource.ROOT) + File.separator + BAKERY_PATH;
+        this.dimPath = basePath + File.separator + level.dimension().location().getNamespace() + File.separator + level.dimension().location().getPath();
     }
 
     // loads bakery from disk to memory for this dimension
     // TODO: acquire lock on file(s) to prevent concurrent shenanigans
-    public void readAll() {
-        ResourceLocation dimension = level.dimension().location();
-        String dimPath = basePath + File.separator + dimension.getNamespace() + File.separator + dimension.getPath();
-
-        File dimDir = new File(dimPath);
-        dimDir.mkdirs();
-
-        if (!dimDir.isDirectory()) return;
-
-        File[] regions = dimDir.listFiles();
-        if (regions == null) return;
-
-        S2Lib.logInfo("Loading bakery for {} from {}", dimension, dimPath);
-        for (File region : regions) {
-            if (!region.isDirectory()) continue;
-            File[] chunks = region.listFiles(filter);
-            if (chunks == null) continue;
-
-            for (File chunk : chunks) {
-                ChunkPos pos = parseChunkPos(chunk);
-                Loaf loaf = read(chunk);
-
-                if (pos == null || loaf == null) continue;
-                loafMap.put(pos.toLong(), loaf);
-            }
-        }
-    }
-
     private static final int X_ROWS = 16;
     private static final int Z_SIZE = 6;
-    private static Loaf read(@NotNull File loafFile) {
+    private Loaf read(@NotNull File loafFile) {
+        ChunkPos potentialPos = parseChunkPos(loafFile);
         Loaf loaf = null;
+
+        if (potentialPos == null) return null;
 
         try {
             byte[] bytes = FileUtils.readFileToByteArray(loafFile);
@@ -86,50 +64,30 @@ public class Bakery {
 
                 for (int x=0;x<X_ROWS;x++) { // get hazard level for this x-row
                     byte[] currentXRow = Arrays.copyOfRange(layer, Z_SIZE * x, Z_SIZE * (x+1));
-                    ByteBuffer bb = ByteBuffer.allocate(Long.BYTES);
-
-                    for (int z=0;z<Z_SIZE;z++) { // get the 6 bytes for this row (z-coord)
-                        bb.put(currentXRow[z]);
-                    }
-
-                    bb.put(new byte[]{0, 0}); // fill last 2 bytes
-                    bb.flip();
-
-                    long buf = bb.getLong();
-
-                    // now get hazards
-                    for (int z=0;z<16;z++) {
-                        int bufSlice = (int) (buf & 0x111);
-                        hazards[y][x][z] = HazardLevel.values()[bufSlice];
-
-                        buf = buf << 3;
-                    }
+                    hazards[y][x] = HazardLevel.fromBytes16(currentXRow);
                 }
             }
 
-            ChunkPos potentialPos = parseChunkPos(loafFile);
-
-            if (potentialPos != null) {
-                loaf = new Loaf(hazards, potentialPos);
-            }
+            loaf = new Loaf(hazards, potentialPos);
         } catch (IOException e) {
-            S2Lib.LOGGER.error("Encountered an error trying to read from {}: {}", loafFile.getPath(), e.getMessage());
+            S2Lib.LOGGER.error("Encountered an IOException trying to read from {}: {}", loafFile.getPath(), e.getMessage());
         }
 
         return loaf;
     }
 
+    public Loaf attemptRead(@NotNull ChunkPos pos) {
+        setupDimDir();
+        File potentialFile = new File(dimPath + File.separator + pos.getRegionX() + "." + pos.getRegionZ() + File.separator + File.separator + pos.x + "." + pos.z + "." + LOAF_EXTENSION);
+
+        return (potentialFile.exists()) ? read(potentialFile) : null;
+    }
+
     // writes current bakery to disk for this dimension
     public void writeAll() {
-        ResourceLocation dimension = level.dimension().location();
-        String dimPath = basePath + File.separator + dimension.getNamespace() + File.separator + dimension.getPath();
+        setupDimDir();
 
-        File dimPathDir = new File(dimPath);
-        dimPathDir.mkdirs();
-
-        if (!dimPathDir.isDirectory()) return;
-
-        S2Lib.logInfo("Writing bakery for {} to {}", dimension, dimPath);
+        S2Lib.logInfo("Writing bakery to {}", dimPath);
         for (Map.Entry<Long, Loaf> entry : loafMap.long2ObjectEntrySet()) {
             ChunkPos pos = new ChunkPos(entry.getKey());
             Loaf loaf = entry.getValue();
@@ -143,9 +101,11 @@ public class Bakery {
     private static void write(@NotNull Loaf loaf, @NotNull File loafFile) {
         // loaf to byte
         ByteBuffer buffer = ByteBuffer.allocate(6 * 16 * loaf.chunkHazard().length);
-        for (HazardLevel[][] hazardLayer : loaf.chunkHazard()) {
+        HazardLevel[][][] hazard = loaf.chunkHazard();
+
+        for (int y=0;y<hazard.length;y++) {
             for (int x=0;x<16;x++) { // iterate by X-coordinate. important!!
-                buffer.put(HazardLevel.toBytes16(hazardLayer[x]));
+                buffer.put(HazardLevel.toBytes16(hazard[y][x]));
             }
         }
 
@@ -157,11 +117,11 @@ public class Bakery {
         }
     }
 
-    public void reload() {
-        S2Lib.logInfo("Reloading bakery for {}", level.dimension().location());
+    private File setupDimDir() {
+        File dimDir = new File(dimPath);
+        dimDir.mkdirs();
 
-        loafMap.clear();
-        readAll();
+        return dimDir;
     }
 
     public void clear() {
@@ -181,7 +141,7 @@ public class Bakery {
         for (int y=0;y<totalHeight;y++) {
             for (int x=0;x<16;x++) {
                 for (int z=0;z<16;z++) {
-                    hazards[y][x][z] = determineHazard(chunk.getBlockState(cPos.getBlockAt(x, minHeight + y, z))); // X ROWS ARE INVERTED
+                    hazards[y][x][z] = determineHazard(chunk.getBlockState(cPos.getBlockAt(x, minHeight + y, z)));
                 }
             }
         }
@@ -192,12 +152,26 @@ public class Bakery {
         return scannedLoaf;
     }
 
-    public HazardLevel getHazardLevel(BetterBlockPos pos) {
-        Loaf loaf = loafMap.get(new ChunkPos(pos).toLong());
+    public void updateHazardLevel(BetterBlockPos pos, BlockState newState) {
+        ChunkPos cPos = new ChunkPos(pos);
+        Loaf loaf = loafMap.get(cPos.toLong());
 
         if (loaf == null) {
-            loaf = scanChunk(new ChunkPos(pos));
+            scanChunk(cPos);
+            return;
         }
+
+        loaf.chunkHazard()[pos.y + 64][pos.x & 0xF][pos.z & 0xF] = determineHazard(newState);
+        loafMap.put(cPos.toLong(), loaf);
+        S2Lib.logInfo("Updated hazard at {}", pos);
+    }
+
+    public HazardLevel getHazardLevel(BetterBlockPos pos) {
+        ChunkPos cPos = new ChunkPos(pos);
+        Loaf loaf = loafMap.get(cPos.toLong());
+
+        if (loaf == null) loaf = attemptRead(cPos); // try and see if file already exists
+        if (loaf == null) loaf = scanChunk(cPos); // if not, just scan the chunk
 
         return loaf.chunkHazard()[pos.y + 64][pos.x & 0xF][pos.z & 0xF];
     }

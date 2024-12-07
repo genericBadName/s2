@@ -34,24 +34,8 @@ public abstract class MinecraftServerMixin implements BakeryAttachment {
     }
 
     @Override
-    public void loadBakeries() {
-        S2Lib.LOGGER.info("Loading bakeries from disk");
-        for (Bakery bakery : bakeries.values()) {
-            bakery.readAll();
-        }
-    }
-
-    @Override
     public Bakery getBakery(ResourceKey<Level> dimension) {
         return bakeries.get(dimension);
-    }
-
-    @Override
-    public void reloadBakeries() {
-        S2Lib.LOGGER.info("Reloading bakeries from disk");
-        for (Bakery bakery : bakeries.values()) {
-            bakery.reload();
-        }
     }
 
     @Override

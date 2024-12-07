@@ -7,8 +7,6 @@ public interface BakeryAttachment {
     Bakery getBakery(ResourceKey<Level> dimension);
 
     void initBakeries();
-    void loadBakeries();
-    void reloadBakeries();
     void writeBakeries();
     void clearBakeries();
 }
