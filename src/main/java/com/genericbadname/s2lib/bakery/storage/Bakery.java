@@ -5,6 +5,8 @@ import com.genericbadname.s2lib.bakery.HazardLevel;
 import com.genericbadname.s2lib.data.tag.ModBlockTags;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -16,20 +18,20 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.channels.OverlappingFileLockException;
-import java.nio.file.Files;
+import java.nio.channels.*;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.*;
 
 public class Bakery {
     private final ServerLevel level;
-    private final Long2ObjectLinkedOpenHashMap<Loaf> loafMap = new Long2ObjectLinkedOpenHashMap<>();
+    private final Long2ObjectMap<Loaf> loafMap = Long2ObjectMaps.synchronize(new Long2ObjectLinkedOpenHashMap<>());
     private final String basePath;
     private final String dimPath;
+    private final ExecutorService service;
 
     // .minecraft/saves/SAVENAME/s2bakery/NAMESPACE/DIMENSION/rX.rZ/cX.cZ.s2loaf
     public static final String BAKERY_PATH = "s2bakery";
@@ -40,60 +42,82 @@ public class Bakery {
         String root = level.getServer().getWorldPath(LevelResource.ROOT).toString();
         this.basePath = root.substring(0, root.length()-1) + BAKERY_PATH;
         this.dimPath = basePath + File.separator + level.dimension().location().getNamespace() + File.separator + level.dimension().location().getPath();
+        this.service = Executors.newCachedThreadPool();
     }
 
     // loads bakery from disk to memory for this dimension
     private static final int X_ROWS = 16;
     private static final int Z_SIZE = 6;
-    private Loaf read(@NotNull File loafFile) {
-        ChunkPos potentialPos = parseChunkPos(loafFile);
-        Loaf loaf = null;
+    private Loaf read(@NotNull Path loafPath) throws ExecutionException, InterruptedException {
+        ChunkPos potentialPos = parseChunkPos(loafPath.toString());
+        CompletableFuture<Loaf> future = new CompletableFuture<>();
 
         if (potentialPos == null) return null;
 
-        try (RandomAccessFile raf = new RandomAccessFile(loafFile, "rw"); FileChannel channel = raf.getChannel()) {
+        try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(loafPath)) {
             // acquire lock on file to prevent concurrent modification
             FileLock lock = null;
 
             try {
+                // lock and read
                 lock = channel.tryLock();
+                ByteBuffer byteBuffer = ByteBuffer.allocate(16 * 16 * level.getHeight());
+                channel.read(byteBuffer, 0, null, new CompletionHandler<>() {
+                    @Override
+                    public void completed(Integer result, Object attachment) {
+                        byte[] bytes = byteBuffer.array();
+
+                        // decode bytes
+                        int height = bytes.length / (X_ROWS * Z_SIZE);
+                        HazardLevel[][][] hazards = new HazardLevel[height][16][16];
+
+                        for (int y=0;y<height;y++) {
+                            byte[] layer = Arrays.copyOfRange(bytes, X_ROWS * Z_SIZE * y, X_ROWS * Z_SIZE * (y+1));
+
+                            for (int x=0;x<X_ROWS;x++) { // get hazard level for this x-row
+                                byte[] currentXRow = Arrays.copyOfRange(layer, Z_SIZE * x, Z_SIZE * (x+1));
+                                hazards[y][x] = HazardLevel.fromBytes16(currentXRow);
+                            }
+                        }
+
+                        future.completeAsync(() -> new Loaf(hazards, potentialPos), service);
+                    }
+
+                    @Override
+                    public void failed(Throwable exc, Object attachment) {
+                        S2Lib.LOGGER.error("Failed to read from file {}: {}", loafPath, exc.getMessage());
+                    }
+                });
+
             } catch (OverlappingFileLockException e) {
-                S2Lib.LOGGER.error("Tried to read from an already locked file {}: {}", loafFile.getPath(), e.getMessage());
+                S2Lib.LOGGER.error("Tried to read from an already locked file {}", loafPath);
             }
-
-            byte[] bytes = Files.readAllBytes(loafFile.toPath());
-
-            // decode bytes
-            int height = bytes.length / (X_ROWS * Z_SIZE);
-            HazardLevel[][][] hazards = new HazardLevel[height][16][16];
-
-            for (int y=0;y<height;y++) {
-                byte[] layer = Arrays.copyOfRange(bytes, X_ROWS * Z_SIZE * y, X_ROWS * Z_SIZE * (y+1));
-
-                for (int x=0;x<X_ROWS;x++) { // get hazard level for this x-row
-                    byte[] currentXRow = Arrays.copyOfRange(layer, Z_SIZE * x, Z_SIZE * (x+1));
-                    hazards[y][x] = HazardLevel.fromBytes16(currentXRow);
-                }
-            }
-
-            loaf = new Loaf(hazards, potentialPos);
 
             // close resources
             if (lock != null) {
                 lock.release();
             }
         } catch (IOException e) {
-            S2Lib.LOGGER.error("Encountered an IOException trying to read from {}: {}", loafFile.getPath(), e.getMessage());
+            S2Lib.LOGGER.error("Encountered an IOException trying to read from {}: {}", loafPath, e.getMessage());
         }
 
-        return loaf;
+        return future.get();
     }
 
     public Loaf attemptRead(@NotNull ChunkPos pos) {
         setupDimDir();
-        File potentialFile = new File(dimPath + File.separator + pos.getRegionX() + "." + pos.getRegionZ() + File.separator + File.separator + pos.x + "." + pos.z + "." + LOAF_EXTENSION);
+        Path potentialPath = Path.of(dimPath + File.separator + pos.getRegionX() + "." + pos.getRegionZ() + File.separator + File.separator + pos.x + "." + pos.z + "." + LOAF_EXTENSION);
 
-        return (potentialFile.exists()) ? read(potentialFile) : null;
+        // handle executor shenanigans
+        if (potentialPath.toFile().exists()) {
+            try {
+                return read(potentialPath);
+            } catch (ExecutionException | InterruptedException e) {
+                S2Lib.LOGGER.error("Execution interrupted with trying to read from {}: {}", potentialPath, e.getMessage());
+            }
+        }
+
+        return null;
     }
 
     // writes current bakery to disk for this dimension
@@ -107,11 +131,12 @@ public class Bakery {
             String regionPath = dimPath + File.separator + pos.getRegionX() + "." + pos.getRegionZ();
 
             new File(regionPath).mkdirs();
-            write(loaf, new File(regionPath + File.separator + pos.x + "." + pos.z + "." + LOAF_EXTENSION));
+            CompletableFuture.runAsync(() -> write(loaf, Path.of(regionPath + File.separator + pos.x + "." + pos.z + "." + LOAF_EXTENSION)), service);
         }
     }
 
-    private static void write(@NotNull Loaf loaf, @NotNull File loafFile) {
+    // async write
+    private static void write(@NotNull Loaf loaf, @NotNull Path loafPath) {
         // loaf to byte
         ByteBuffer buffer = ByteBuffer.allocate(6 * 16 * loaf.chunkHazard().length);
         HazardLevel[][][] hazard = loaf.chunkHazard();
@@ -124,20 +149,21 @@ public class Bakery {
 
         // write loaf file
         try {
-            if (!loafFile.exists()) loafFile.createNewFile();
+            if (!loafPath.toFile().exists()) loafPath.toFile().createNewFile();
         } catch(IOException e) {
-            S2Lib.LOGGER.error("Could not create a new loaf file at {}: {}", loafFile.getPath(), e.getMessage());
+            S2Lib.LOGGER.error("Could not create a new loaf file at {}: {}", loafPath, e.getMessage());
         }
 
-        try (RandomAccessFile raf = new RandomAccessFile(loafFile, "rw"); FileChannel channel = raf.getChannel()) {
+        try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(loafPath, StandardOpenOption.READ, StandardOpenOption.WRITE)) {
             // acquire lock on file to prevent concurrent modification
+
             FileLock lock = null;
 
             try {
                 lock = channel.tryLock();
-                raf.write(buffer.array());
+                channel.write(buffer, 0);
             } catch (OverlappingFileLockException e) {
-                S2Lib.LOGGER.error("Tried to write to an already locked file {}: {}", loafFile.getPath(), e.getMessage());
+                S2Lib.LOGGER.error("Tried to write to an already locked file {}: {}", loafPath, e.getMessage());
             }
 
             // close resources
@@ -145,7 +171,7 @@ public class Bakery {
                 lock.release();
             }
         } catch (IOException e) {
-            S2Lib.LOGGER.error("Encountered an error trying to write to {}: {}", loafFile.getPath(), e.getMessage());
+            S2Lib.LOGGER.error("Encountered an error trying to write to {}: {}", loafPath, e.getMessage());
         }
     }
 
