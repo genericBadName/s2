@@ -38,8 +38,8 @@ public class S2NearestAttackableTargetGoal<T extends LivingEntity> extends Neare
         super.start();
         s2Mob = (S2Mob) mob;
 
-        if (s2Mob.getPotentialPath().isEmpty()) return;
-        S2Path potentialPath = s2Mob.getPotentialPath().get();
+        if (s2Mob.getPotentialPath() == null) return;
+        S2Path potentialPath = s2Mob.getPotentialPath();
 
         if (potentialPath.isPossible()) {
             currentPath = potentialPath.getNodes();
@@ -91,8 +91,8 @@ public class S2NearestAttackableTargetGoal<T extends LivingEntity> extends Neare
 
     private void attemptPathUpdate() {
         s2Mob.updatePath();
-        if (s2Mob.getPotentialPath().isEmpty()) return;
-        currentPath = s2Mob.getPotentialPath().get().getNodes();
+        if (s2Mob.getPotentialPath() == null) return;
+        currentPath = s2Mob.getPotentialPath().getNodes();
         movingAlongPath = true;
     }
 

@@ -28,10 +28,9 @@ import java.util.concurrent.*;
 
 public class Bakery {
     private final ServerLevel level;
-    private final Long2ObjectMap<Loaf> loafMap = Long2ObjectMaps.synchronize(new Long2ObjectLinkedOpenHashMap<>());
+    private final Long2ObjectMap<Loaf> loafMap;
     private final String basePath;
     private final String dimPath;
-    private final ExecutorService service;
 
     // .minecraft/saves/SAVENAME/s2bakery/NAMESPACE/DIMENSION/rX.rZ/cX.cZ.s2loaf
     public static final String BAKERY_PATH = "s2bakery";
@@ -39,10 +38,10 @@ public class Bakery {
 
     public Bakery(ServerLevel level) {
         this.level = level;
+        this.loafMap = Long2ObjectMaps.synchronize(new Long2ObjectLinkedOpenHashMap<>());
         String root = level.getServer().getWorldPath(LevelResource.ROOT).toString();
         this.basePath = root.substring(0, root.length()-1) + BAKERY_PATH;
         this.dimPath = basePath + File.separator + level.dimension().location().getNamespace() + File.separator + level.dimension().location().getPath();
-        this.service = Executors.newCachedThreadPool();
     }
 
     // loads bakery from disk to memory for this dimension
@@ -80,7 +79,7 @@ public class Bakery {
                             }
                         }
 
-                        future.completeAsync(() -> new Loaf(hazards, potentialPos), service);
+                        future.completeAsync(() -> new Loaf(hazards, potentialPos), S2Lib.SERVICE);
                     }
 
                     @Override
@@ -131,7 +130,7 @@ public class Bakery {
             String regionPath = dimPath + File.separator + pos.getRegionX() + "." + pos.getRegionZ();
 
             new File(regionPath).mkdirs();
-            CompletableFuture.runAsync(() -> write(loaf, Path.of(regionPath + File.separator + pos.x + "." + pos.z + "." + LOAF_EXTENSION)), service);
+            CompletableFuture.runAsync(() -> write(loaf, Path.of(regionPath + File.separator + pos.x + "." + pos.z + "." + LOAF_EXTENSION)), S2Lib.SERVICE);
         }
     }
 

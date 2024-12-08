@@ -11,15 +11,14 @@ import com.genericbadname.s2lib.network.packet.RenderNodeUpdateS2CPacket;
 import com.genericbadname.s2lib.pathing.movement.Moves;
 import com.genericbadname.s2lib.pathing.movement.PositionValidity;
 import com.google.common.collect.ImmutableSet;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.Level;
 import org.apache.commons.compress.utils.Lists;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 public class AStarPathCalculator {
@@ -27,12 +26,12 @@ public class AStarPathCalculator {
     private static final ImmutableSet<Moves> availableMoves;
 
     private BinaryHeapOpenSet openSet;
-    private Long2ObjectOpenHashMap<S2Node> map;
+    private Long2ObjectMap<S2Node> map;
     private long startTime;
 
     public AStarPathCalculator() {
         this.openSet = new BinaryHeapOpenSet();
-        this.map = new Long2ObjectOpenHashMap<>();
+        this.map = Long2ObjectMaps.synchronize(new Long2ObjectOpenHashMap<>());
     }
 
     // set available moves based on config
@@ -60,11 +59,11 @@ public class AStarPathCalculator {
     }
 
     // run until completion
-    public Optional<S2Path> calculate(BetterBlockPos startPos, BetterBlockPos endPos, Bakery bakery) {
+    public S2Path calculate(BetterBlockPos startPos, BetterBlockPos endPos, Bakery bakery) {
         reset();
 
         S2Lib.logInfo("Starting pathfinder from {} to {} in {}", startPos, endPos, bakery);
-        if (startPos == null || endPos == null) return Optional.empty();
+        if (startPos == null || endPos == null) return null;
 
         startTime = System.currentTimeMillis();
         int numNodes = 1;
@@ -133,10 +132,10 @@ public class AStarPathCalculator {
 
         logOut(false, numNodes, startTime);
 
-        return Optional.empty(); // empty list, meaning no path
+        return null; // empty list, meaning no path
     }
 
-    private Optional<S2Path> retrace(S2Node goal) {
+    private S2Path retrace(S2Node goal) {
         List<S2Node> path = Lists.newArrayList();
         S2Node current = goal;
 
@@ -148,7 +147,7 @@ public class AStarPathCalculator {
 
         Collections.reverse(path);
 
-        return Optional.of(new S2Path(path));
+        return new S2Path(path);
     }
 
     private S2Node getNodeAtPosition(BetterBlockPos pos, long hashCode, long parent, Moves move) {

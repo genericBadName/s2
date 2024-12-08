@@ -39,10 +39,10 @@ public class GetToBlockGoal extends Goal {
 
     @Override
     public void start() {
-        Optional<S2Path> potentialPath = mob.calculateFromCurrentLocation(target.getPos());
-        if (potentialPath.isEmpty()) return;
+        S2Path potentialPath = mob.calculateFromCurrentLocation(target.getPos());
+        if (potentialPath == null) return;
 
-        this.path = potentialPath.get().getNodes();
+        this.path = potentialPath.getNodes();
         walkingTo = path.get(0);
     }
 

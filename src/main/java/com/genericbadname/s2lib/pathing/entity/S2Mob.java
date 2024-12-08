@@ -18,14 +18,14 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public abstract class S2Mob extends PathfinderMob {
     public static final int RETRY_UPDATE_COOLDOWN = 20; // ticks
     public static final int FAIL_UPDATE_PENALTY = 60; // ticks
     private int updateTimer = RETRY_UPDATE_COOLDOWN;
     private AStarPathCalculator calculator;
-    private Optional<S2Path> potentialPath;
+    private S2Path potentialPath;
     private BetterBlockPos lastTracked;
 
     public S2Mob(EntityType<? extends PathfinderMob> entityType, Level level) {
@@ -33,7 +33,7 @@ public abstract class S2Mob extends PathfinderMob {
 
         if (!level.isClientSide()) {
             this.calculator = new AStarPathCalculator();
-            this.potentialPath = Optional.of(new S2Path());
+            this.potentialPath = null;
             this.lastTracked = BetterBlockPos.ORIGIN;
         }
     }
@@ -156,45 +156,46 @@ public abstract class S2Mob extends PathfinderMob {
 
         LivingEntity target = getTarget();
         updateTimer = RETRY_UPDATE_COOLDOWN;
-        potentialPath = Optional.empty();
+        potentialPath = null;
 
         // update path according to target position
         if (target != null) {
             if (!target.blockPosition().equals(lastTracked)) {
                 S2Lib.logInfo("Updating path for {}", this);
 
-                lastTracked = BetterBlockPos.from(target.blockPosition());
-                potentialPath = calculateFromCurrentLocation(lastTracked);
+                CompletableFuture.runAsync(() -> {
+                    lastTracked = BetterBlockPos.from(target.blockPosition());
+                    potentialPath = calculateFromCurrentLocation(lastTracked);
+                }, S2Lib.SERVICE);
             }
         }
     }
 
     // path calculation
-    public Optional<S2Path> getPotentialPath() {
+    public S2Path getPotentialPath() {
         return potentialPath;
     }
-    public Optional<S2Path> calculateFromCurrentLocation(BetterBlockPos dest) {
+    public S2Path calculateFromCurrentLocation(BetterBlockPos dest) {
         Bakery bakery = ((ServerLevel)level).getServer().getBakery(level.dimension());
 
         if (bakery == null) {
             S2Lib.LOGGER.warn("Entity {} tried to pathfind with a nonexistent bakery. If the world was just loaded, ignore this.", uuid);
             updateTimer = FAIL_UPDATE_PENALTY;
 
-            return Optional.empty();
+            return null;
         }
+
 
         potentialPath = calculator.calculate(BetterBlockPos.from(blockPosition()), dest, bakery);
 
-        if (potentialPath.isEmpty()) return potentialPath;
-        S2Path path = potentialPath.get();
-
-        if (!path.isPossible()) updateTimer = FAIL_UPDATE_PENALTY; // stop constant failure updates
+        if (potentialPath == null) return potentialPath;
+        if (!potentialPath.isPossible()) updateTimer = FAIL_UPDATE_PENALTY; // stop constant failure updates
 
         // send data to client for debug
         if (CommonConfig.DEBUG_ENTITY_PATHS.get()) {
             FriendlyByteBuf buf = PacketByteBufs.create();
             buf.writeUUID(uuid);
-            path.serialize(buf);
+            potentialPath.serialize(buf);
 
             S2NetworkingUtil.dispatchTrackingEntity(S2NetworkingConstants.RENDER_MOB_PATH, buf, this);
         }

@@ -1,19 +1,16 @@
 package com.genericbadname.s2lib.mixin.render;
 
-import com.genericbadname.s2lib.S2Lib;
 import com.genericbadname.s2lib.client.render.IRenderer;
 import com.genericbadname.s2lib.client.render.PathRenderer;
 import com.genericbadname.s2lib.client.render.DebugRenderingCache;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.S2Path;
 import com.mojang.blaze3d.vertex.PoseStack;
-import it.unimi.dsi.fastutil.longs.Long2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -23,7 +20,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.awt.*;
-import java.util.Map;
 
 @Mixin(LevelRenderer.class)
 public class MixinDebugLevelRenderer {
@@ -41,6 +37,7 @@ public class MixinDebugLevelRenderer {
         // render calculated blocks
         for (Object2BooleanMap.Entry<BetterBlockPos> entry : DebugRenderingCache.getBlocks()) {
             if (entry == null) return;
+            if (entry.getKey() == null) return;
 
             boolean valid = entry.getBooleanValue();
             Color color = valid ? Color.GREEN : Color.RED;

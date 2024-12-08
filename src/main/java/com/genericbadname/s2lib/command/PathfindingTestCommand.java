@@ -4,6 +4,7 @@ import com.genericbadname.s2lib.S2Lib;
 import com.genericbadname.s2lib.pathing.AStarPathCalculator;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.S2Node;
+import com.genericbadname.s2lib.pathing.S2Path;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
@@ -29,8 +30,10 @@ public class PathfindingTestCommand {
             // loop through path
             AStarPathCalculator calculator = new AStarPathCalculator();
 
+            S2Path path = calculator.calculate(BetterBlockPos.from(start), BetterBlockPos.from(end), ctx.getServer().getBakery(ctx.getLevel().dimension()));
+            if (path == null) return Command.SINGLE_SUCCESS;
 
-            List<S2Node> nodes = calculator.calculate(BetterBlockPos.from(start), BetterBlockPos.from(end), ctx.getServer().getBakery(ctx.getLevel().dimension())).orElseThrow().getNodes();
+            List<S2Node> nodes = path.getNodes();
             S2Lib.logInfo("Got node list of size {}", nodes.size());
 
             for (S2Node node : nodes) {

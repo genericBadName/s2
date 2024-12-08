@@ -17,9 +17,13 @@ import net.minecraftforge.fml.config.ModConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class S2Lib implements ModInitializer {
     public static final String MOD_ID = "s2lib";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
+    public static final ExecutorService SERVICE = Executors.newCachedThreadPool();
 
     @Override
     public void onInitialize() {
