@@ -25,6 +25,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 
 public class Bakery {
     private final ServerLevel level;
@@ -140,37 +141,33 @@ public class Bakery {
         ByteBuffer buffer = ByteBuffer.allocate(6 * 16 * loaf.chunkHazard().length);
         HazardLevel[][][] hazard = loaf.chunkHazard();
 
-        for (HazardLevel[][] hazardLevels : hazard) {
+        for (HazardLevel[][] yLayer : hazard) {
             for (int x = 0; x < 16; x++) { // iterate by X-coordinate. important!!
-                buffer.put(HazardLevel.toBytes16(hazardLevels[x]));
+                buffer.put(HazardLevel.toBytes16(yLayer[x]));
             }
         }
 
         // write loaf file
-        try {
-            if (!loafPath.toFile().exists()) loafPath.toFile().createNewFile();
-        } catch(IOException e) {
-            S2Lib.LOGGER.error("Could not create a new loaf file at {}: {}", loafPath, e.getMessage());
-        }
-
-        try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(loafPath, StandardOpenOption.READ, StandardOpenOption.WRITE)) {
+        try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(loafPath, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE)) {
             // acquire lock on file to prevent concurrent modification
+            buffer.position(0);
+            channel.tryLock(0, buffer.capacity(), false);
+            channel.write(buffer, 0, buffer, new CompletionHandler<>() {
+                @Override
+                public void completed(Integer result, ByteBuffer attachment) {
+                    buffer.clear();
+                    //S2Lib.LOGGER.info("Wrote {} bytes to {}", result, loafPath);
+                }
 
-            FileLock lock = null;
+                @Override
+                public void failed(Throwable exc, ByteBuffer attachment) {
 
-            try {
-                lock = channel.tryLock();
-                channel.write(buffer, 0);
-            } catch (OverlappingFileLockException e) {
-                S2Lib.LOGGER.error("Tried to write to an already locked file {}: {}", loafPath, e.getMessage());
-            }
-
-            // close resources
-            if (lock != null) {
-                lock.release();
-            }
+                }
+            });
         } catch (IOException e) {
-            S2Lib.LOGGER.error("Encountered an error trying to write to {}: {}", loafPath, e.getMessage());
+            S2Lib.LOGGER.error("Encountered an IO exception trying to write to {}: {}", loafPath, e.getMessage());
+        } catch (OverlappingFileLockException e) {
+            S2Lib.LOGGER.error("Tried to write to an already locked file {}: {}", loafPath, e.getMessage());
         }
     }
 
