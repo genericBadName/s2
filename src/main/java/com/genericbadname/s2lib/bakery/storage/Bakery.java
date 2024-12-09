@@ -186,16 +186,20 @@ public class Bakery {
     // TODO: defer chunk scanning and pass to different thread
     // chunk access needs to happen on main thread, but calculations don't
     public Loaf scanChunk(ChunkPos cPos) {
-        ChunkAccess chunk = level.getChunk(cPos.x, cPos.z);
-        int minHeight = chunk.getMinBuildHeight();
-        int totalHeight = chunk.getHeight();
+        return scanChunk(level.getChunk(cPos.x, cPos.z));
+    }
+
+    public Loaf scanChunk(ChunkAccess chunkAccess) {
+        ChunkPos cPos = chunkAccess.getPos();
+        int minHeight = chunkAccess.getMinBuildHeight();
+        int totalHeight = chunkAccess.getHeight();
 
         HazardLevel[][][] hazards = new HazardLevel[totalHeight][16][16];
 
         for (int y=0;y<totalHeight;y++) {
             for (int x=0;x<16;x++) {
                 for (int z=0;z<16;z++) {
-                    hazards[y][x][z] = determineHazard(chunk.getBlockState(cPos.getBlockAt(x, minHeight + y, z)));
+                    hazards[y][x][z] = determineHazard(chunkAccess.getBlockState(cPos.getBlockAt(x, minHeight + y, z)));
                 }
             }
         }
@@ -211,8 +215,14 @@ public class Bakery {
         Loaf loaf = loafMap.get(cPos.toLong());
 
         if (loaf == null) {
-            scanChunk(cPos);
-            return;
+            Loaf attempted = attemptRead(cPos);
+
+            if (attempted != null) {
+                loaf = attempted;
+            } else {
+                scanChunk(cPos);
+                return;
+            }
         }
 
         loaf.chunkHazard()[pos.y + 64][pos.x & 0xF][pos.z & 0xF] = determineHazard(newState);

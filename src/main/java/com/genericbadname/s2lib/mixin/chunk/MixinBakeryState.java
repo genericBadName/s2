@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServerMixin implements BakeryAttachment {
+public abstract class MixinBakeryState implements BakeryAttachment {
     @Shadow public abstract Set<ResourceKey<Level>> levelKeys();
     @Shadow @Final private Map<ResourceKey<Level>, ServerLevel> levels;
 
