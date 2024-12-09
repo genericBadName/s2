@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.storage.LevelResource;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +26,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.*;
-import java.util.function.Consumer;
 
 public class Bakery {
     private final ServerLevel level;
@@ -186,7 +186,7 @@ public class Bakery {
     // TODO: defer chunk scanning and pass to different thread
     // chunk access needs to happen on main thread, but calculations don't
     public Loaf scanChunk(ChunkPos cPos) {
-        return scanChunk(level.getChunk(cPos.x, cPos.z));
+        return scanChunk(level.getChunk(cPos.x, cPos.z, ChunkStatus.FULL));
     }
 
     public Loaf scanChunk(ChunkAccess chunkAccess) {
@@ -214,20 +214,11 @@ public class Bakery {
         ChunkPos cPos = new ChunkPos(pos);
         Loaf loaf = loafMap.get(cPos.toLong());
 
-        if (loaf == null) {
-            Loaf attempted = attemptRead(cPos);
-
-            if (attempted != null) {
-                loaf = attempted;
-            } else {
-                scanChunk(cPos);
-                return;
-            }
-        }
+        if (loaf == null) return; // only update if the chunk is in memory
 
         loaf.chunkHazard()[pos.y + 64][pos.x & 0xF][pos.z & 0xF] = determineHazard(newState);
         loafMap.put(cPos.toLong(), loaf);
-        S2Lib.logInfo("Updated hazard at {}", pos);
+        //S2Lib.logInfo("Updated hazard at {}", pos);
     }
 
     public HazardLevel getHazardLevel(BetterBlockPos pos) {
@@ -236,6 +227,7 @@ public class Bakery {
 
         if (loaf == null) loaf = attemptRead(cPos); // try and see if file already exists
         if (loaf == null) loaf = scanChunk(cPos); // if not, just scan the chunk
+        if (loaf == null) return HazardLevel.UNKNOWN; // the chunk just isn't loaded yet.
 
         return loaf.chunkHazard()[pos.y + 64][pos.x & 0xF][pos.z & 0xF];
     }

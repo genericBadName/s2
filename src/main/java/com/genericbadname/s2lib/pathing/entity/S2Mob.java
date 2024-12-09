@@ -21,8 +21,8 @@ import net.minecraft.world.phys.Vec3;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class S2Mob extends PathfinderMob {
-    public static final int RETRY_UPDATE_COOLDOWN = 20; // ticks
-    public static final int FAIL_UPDATE_PENALTY = 60; // ticks
+    public static final int RETRY_UPDATE_COOLDOWN = 2; // ticks
+    public static final int FAIL_UPDATE_PENALTY = 20; // ticks
     private int updateTimer = RETRY_UPDATE_COOLDOWN;
     private AStarPathCalculator calculator;
     private S2Path potentialPath;
