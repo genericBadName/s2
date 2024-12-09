@@ -1,5 +1,6 @@
 package com.genericbadname.s2lib.example.goal;
 
+import com.genericbadname.s2lib.S2Lib;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.S2Node;
 import com.genericbadname.s2lib.pathing.S2Path;
@@ -7,6 +8,7 @@ import com.genericbadname.s2lib.pathing.entity.S2Mob;
 import com.genericbadname.s2lib.pathing.movement.Moves;
 import net.minecraft.world.entity.ai.goal.Goal;
 
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +41,13 @@ public class GetToBlockGoal extends Goal {
 
     @Override
     public void start() {
-        S2Path potentialPath = mob.calculateFromCurrentLocation(target.getPos());
+        S2Path potentialPath = null;
+        try {
+            potentialPath = mob.calculateFromCurrentLocation(target.getPos());
+        } catch (IOException e) {
+            S2Lib.LOGGER.error("Entity {} could not access its level.", mob.getUUID());
+        }
+
         if (potentialPath == null) return;
 
         this.path = potentialPath.getNodes();

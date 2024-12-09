@@ -22,7 +22,7 @@ public enum HazardLevel {
     HazardLevel(double defaultValue, ForgeConfigSpec.ConfigValue<Double> configValue) {
         try {
             this.costMultiplier = configValue.get();
-        } catch (ServiceConfigurationError | NoClassDefFoundError e) {
+        } catch (IllegalStateException e) {
             this.costMultiplier = defaultValue;
         }
     }
