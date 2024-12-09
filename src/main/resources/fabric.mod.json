@@ -17,6 +17,9 @@
     ],
     "main": [
       "com.genericbadname.s2lib.S2Lib"
+    ],
+    "fabric-datagen": [
+      "com.genericbadname.s2lib.data.ModDataGenerator"
     ]
   },
   "mixins": [
