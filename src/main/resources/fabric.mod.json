@@ -33,7 +33,8 @@
   },
   "custom": {
     "loom:injected_interfaces": {
-      "net/minecraft/server/MinecraftServer": ["com/genericbadname/s2lib/bakery/storage/BakeryAttachment"]
+      "net/minecraft/server/MinecraftServer": ["com/genericbadname/s2lib/bakery/storage/BakeryAttachment"],
+      "net/minecraft/world/entity/Mob": ["com/genericbadname/s2lib/pathing/entity/S2SmartMob"]
     }
   },
   "accessWidener": "s2lib.accesswidener"

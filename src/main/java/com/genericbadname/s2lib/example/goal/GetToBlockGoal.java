@@ -4,22 +4,22 @@ import com.genericbadname.s2lib.S2Lib;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.S2Node;
 import com.genericbadname.s2lib.pathing.S2Path;
-import com.genericbadname.s2lib.pathing.entity.S2Mob;
+import com.genericbadname.s2lib.pathing.entity.S2SmartMob;
 import com.genericbadname.s2lib.pathing.movement.Moves;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Optional;
 
-public class GetToBlockGoal extends Goal {
-    private final S2Mob mob;
+public class GetToBlockGoal<M extends Mob & S2SmartMob> extends Goal {
+    private final M mob;
     private final S2Node target;
     private List<S2Node> path;
     private S2Node walkingTo;
 
-    public GetToBlockGoal(S2Mob mob, BetterBlockPos target) {
+    public GetToBlockGoal(M mob, BetterBlockPos target) {
         this.mob = mob;
         this.target = new S2Node(target, Moves.START);
 

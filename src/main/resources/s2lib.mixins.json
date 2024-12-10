@@ -4,8 +4,10 @@
   "package": "com.genericbadname.s2lib.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "chunk.MixinBakeOnUpdate",
     "chunk.MixinBakeryState",
-    "chunk.MixinBakeOnUpdate"
+    "entity.MixinS2Mob",
+    "entity.MixinSmartZombie"
   ],
   "client": [
     "render.MixinDebugLevelRenderer",

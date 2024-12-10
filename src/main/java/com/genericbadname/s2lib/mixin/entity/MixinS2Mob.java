@@ -1,4 +1,4 @@
-package com.genericbadname.s2lib.pathing.entity;
+package com.genericbadname.s2lib.mixin.entity;
 
 import com.genericbadname.s2lib.S2Lib;
 import com.genericbadname.s2lib.bakery.storage.Bakery;
@@ -8,26 +8,45 @@ import com.genericbadname.s2lib.network.S2NetworkingUtil;
 import com.genericbadname.s2lib.pathing.AStarPathCalculator;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.S2Path;
+import com.genericbadname.s2lib.pathing.entity.S2SmartMob;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.io.IOException;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public abstract class S2Mob extends PathfinderMob {
-    public static final int RETRY_UPDATE_COOLDOWN = 2; // ticks
-    public static final int FAIL_UPDATE_PENALTY = 20; // ticks
+@Mixin(Mob.class)
+public abstract class MixinS2Mob extends LivingEntity implements S2SmartMob {
+
+    @Shadow @Nullable public abstract LivingEntity getTarget();
+
+    @Unique
+    private static final int RETRY_UPDATE_COOLDOWN = 2; // ticks
+    @Unique
+    private static final int FAIL_UPDATE_PENALTY = 20; // ticks
+    @Unique
     private int updateTimer = RETRY_UPDATE_COOLDOWN;
+    @Unique
     private AStarPathCalculator calculator;
+    @Unique
     private S2Path potentialPath;
+    @Unique
     private BetterBlockPos lastTracked;
 
-    public S2Mob(EntityType<? extends PathfinderMob> entityType, Level level) {
+    protected MixinS2Mob(EntityType<? extends Mob> entityType, Level level) {
         super(entityType, level);
 
         if (!level.isClientSide()) {
@@ -37,19 +56,16 @@ public abstract class S2Mob extends PathfinderMob {
         }
     }
 
-
-    // ai ticking
-    @Override
-    public void tick() {
-        super.tick();
-
+    @Inject(method = "tick", at = @At("TAIL"))
+    public void tick(CallbackInfo ci) {
         if (updateTimer > 0) updateTimer--;
     }
 
+    @Override
     public void updatePath() {
         if (updateTimer != 0) return;
 
-        LivingEntity target = getTarget();
+        LivingEntity target = this.getTarget();
         updateTimer = RETRY_UPDATE_COOLDOWN;
         potentialPath = null;
 
@@ -63,20 +79,22 @@ public abstract class S2Mob extends PathfinderMob {
                     try {
                         potentialPath = calculateFromCurrentLocation(lastTracked);
                     } catch (IOException e) {
-                        S2Lib.LOGGER.error("Entity {} could not access its level.", uuid);
+                        S2Lib.LOGGER.error("Entity {} could not access its level.", this.getUUID());
                     }
                 }, S2Lib.SERVICE);
             }
         }
     }
 
-    // path calculation
+    @Override
     public S2Path getPotentialPath() {
         return potentialPath;
     }
+
+    @Override
     public S2Path calculateFromCurrentLocation(BetterBlockPos dest) throws IOException {
         Bakery bakery;
-        try (Level level = level()) {
+        try (Level level = this.level()) {
             bakery = ((ServerLevel) level).getServer().getBakery(level.dimension());
         }
 
@@ -96,21 +114,12 @@ public abstract class S2Mob extends PathfinderMob {
         // send data to client for debug
         if (CommonConfig.DEBUG_ENTITY_PATHS.get()) {
             FriendlyByteBuf buf = PacketByteBufs.create();
-            buf.writeUUID(uuid);
+            buf.writeUUID(this.uuid);
             potentialPath.serialize(buf);
 
-            S2NetworkingUtil.dispatchTrackingEntity(S2NetworkingConstants.RENDER_MOB_PATH, buf, this);
+            S2NetworkingUtil.dispatchTrackingEntity(S2NetworkingConstants.RENDER_MOB_PATH, buf, (Mob)(Object)this);
         }
 
         return potentialPath;
-    }
-
-    // other
-    @Override
-    public void remove(RemovalReason reason) {
-        super.remove(reason);
-
-        S2NetworkingUtil.dispatchAll(S2NetworkingConstants.REMOVE_MOB_PATH, PacketByteBufs.create().writeUUID(uuid), getServer());
-        S2NetworkingUtil.dispatchAll(S2NetworkingConstants.CLEAR_NODES, PacketByteBufs.empty(), getServer());
     }
 }
