@@ -11,9 +11,9 @@ import com.genericbadname.s2lib.network.packet.RenderNodeUpdateS2CPacket;
 import com.genericbadname.s2lib.pathing.movement.Moves;
 import com.genericbadname.s2lib.pathing.movement.PositionValidity;
 import com.google.common.collect.ImmutableSet;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.apache.commons.compress.utils.Lists;
 
@@ -29,9 +29,13 @@ public class AStarPathCalculator {
     private Long2ObjectMap<S2Node> map;
     private long startTime;
 
+    private final Object2BooleanMap<BetterBlockPos> nodeUpdateDebug;
+
     public AStarPathCalculator() {
         this.openSet = new BinaryHeapOpenSet();
         this.map = Long2ObjectMaps.synchronize(new Long2ObjectOpenHashMap<>());
+
+        this.nodeUpdateDebug = new Object2BooleanArrayMap<>();
     }
 
     // set available moves based on config
@@ -94,7 +98,7 @@ public class AStarPathCalculator {
                     // check if neighbor is valid, otherwise skip node
                     // TODO: possibly cache this result in the bakery for faster lookup?
                     PositionValidity validity = move.positionValidator.apply(bakery, neighborPos);
-                    //if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) {S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, validity == PositionValidity.SUCCESS), bakery.getServer());
+                    if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) nodeUpdateDebug.put(neighborPos, validity == PositionValidity.SUCCESS);
 
                     if (validity != PositionValidity.SUCCESS) {
                         if (validity == move.stopCondition) break;
@@ -124,7 +128,7 @@ public class AStarPathCalculator {
                         }
 
                         // for debug :)
-                        //if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, true), bakery.getServer());
+                        if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) nodeUpdateDebug.put(neighborPos, true);
                     }
                 }
             }
@@ -133,6 +137,10 @@ public class AStarPathCalculator {
         logOut(false, numNodes, startTime);
 
         return null; // empty list, meaning no path
+    }
+
+    public Object2BooleanMap<BetterBlockPos> nodeUpdates() {
+        return nodeUpdateDebug;
     }
 
     private S2Path retrace(S2Node goal) {

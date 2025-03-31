@@ -5,10 +5,12 @@ import com.genericbadname.s2lib.bakery.storage.Bakery;
 import com.genericbadname.s2lib.config.CommonConfig;
 import com.genericbadname.s2lib.network.S2NetworkingConstants;
 import com.genericbadname.s2lib.network.S2NetworkingUtil;
+import com.genericbadname.s2lib.network.packet.RenderNodeUpdateS2CPacket;
 import com.genericbadname.s2lib.pathing.AStarPathCalculator;
 import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.S2Path;
 import com.genericbadname.s2lib.pathing.entity.S2SmartMob;
+import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
@@ -109,6 +111,11 @@ public abstract class MixinS2Mob implements S2SmartMob, Targeting {
         // ONLY RUN CALCULATIONS ON ANOTHER THREAD! ACCESS LEVEL AND ENTITY BEFOREHAND!
         return CompletableFuture.supplyAsync(() -> calculator.calculate(src, dest, bakery), S2Lib.SERVICE)
                 .thenAccept(path -> {
+                    // send debug updates
+                    for (Object2BooleanMap.Entry<BetterBlockPos> entry : calculator.nodeUpdates().object2BooleanEntrySet()) {
+                        S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(entry.getKey(), entry.getBooleanValue()), level.getServer());
+                    }
+
                     if (path == null) return;
                     if (!path.isPossible()) {
                         updateTimer.set(FAIL_UPDATE_PENALTY); // stop constant failure updates
