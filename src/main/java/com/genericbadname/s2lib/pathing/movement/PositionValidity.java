@@ -117,8 +117,9 @@ public enum PositionValidity {
             return PositionValidity.SUCCESS;
         }
 
+        // TODO: access server through synchronized means
         protected static void maybeSendUpdate(BetterBlockPos pos, boolean valid, Bakery bakery) {
-            if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(pos, valid), bakery.getServer());
+            //if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(pos, valid), bakery.getServer());
         }
     }
 }

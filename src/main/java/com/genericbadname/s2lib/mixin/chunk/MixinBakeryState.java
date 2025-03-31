@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.LevelResource;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,9 +28,10 @@ public abstract class MixinBakeryState implements BakeryAttachment {
     @Override
     public void initBakeries() {
         S2Lib.LOGGER.info("Initializing bakeries");
+        MinecraftServer thiz = ((MinecraftServer)((Object)this));
         for (ResourceKey<Level> key : levelKeys()) {
             S2Lib.LOGGER.info("Initializing bakery for {}", key.location());
-            bakeries.put(key, new Bakery(levels.get(key)));
+            bakeries.put(key, new Bakery(key, thiz.getWorldPath(LevelResource.ROOT).toString(), thiz.getLevel(key).getHeight()));
         }
     }
 

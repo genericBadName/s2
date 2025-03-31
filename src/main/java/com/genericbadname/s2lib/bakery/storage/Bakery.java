@@ -7,9 +7,11 @@ import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
@@ -28,21 +30,22 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 public class Bakery {
-    private final ServerLevel level;
+    private final ResourceKey<Level> level;
     private final Long2ObjectMap<Loaf> loafMap;
     private final String basePath;
     private final String dimPath;
+    private final int logicalHeight;
 
     // .minecraft/saves/SAVENAME/s2bakery/NAMESPACE/DIMENSION/rX.rZ/cX.cZ.s2loaf
     public static final String BAKERY_PATH = "s2bakery";
     public static final String LOAF_EXTENSION = "s2loaf";
 
-    public Bakery(ServerLevel level) {
+    public Bakery(ResourceKey<Level> level, String root, int logicalHeight) {
         this.level = level;
         this.loafMap = Long2ObjectMaps.synchronize(new Long2ObjectLinkedOpenHashMap<>());
-        String root = level.getServer().getWorldPath(LevelResource.ROOT).toString();
         this.basePath = root.substring(0, root.length()-1) + BAKERY_PATH;
-        this.dimPath = basePath + File.separator + level.dimension().location().getNamespace() + File.separator + level.dimension().location().getPath();
+        this.dimPath = basePath + File.separator + level.location().getNamespace() + File.separator + level.location().getPath();
+        this.logicalHeight = logicalHeight;
     }
 
     // loads bakery from disk to memory for this dimension
@@ -61,7 +64,7 @@ public class Bakery {
             try {
                 // lock and read
                 lock = channel.tryLock();
-                ByteBuffer byteBuffer = ByteBuffer.allocate(16 * 16 * level.getHeight());
+                ByteBuffer byteBuffer = ByteBuffer.allocate(16 * 16 * logicalHeight);
                 channel.read(byteBuffer, 0, null, new CompletionHandler<>() {
                     @Override
                     public void completed(Integer result, Object attachment) {
@@ -101,7 +104,7 @@ public class Bakery {
             S2Lib.LOGGER.error("Encountered an IOException trying to read from {}: {}", loafPath, e.getMessage());
         }
 
-        return future.get();
+        return future.join();
     }
 
     public Loaf attemptRead(@NotNull ChunkPos pos) {
@@ -179,13 +182,13 @@ public class Bakery {
     }
 
     public void clear() {
-        S2Lib.logInfo("Clearing bakery for {}", level.dimension().location());
+        S2Lib.logInfo("Clearing bakery for {}", level.location());
         loafMap.clear();
     }
 
     // TODO: defer chunk scanning and pass to different thread
     // chunk access needs to happen on main thread, but calculations don't
-    public Loaf scanChunk(ChunkPos cPos) {
+    public Loaf scanChunk(Level level, ChunkPos cPos) {
         return scanChunk(level.getChunk(cPos.x, cPos.z, ChunkStatus.FULL));
     }
 
@@ -226,7 +229,7 @@ public class Bakery {
         Loaf loaf = loafMap.get(cPos.toLong());
 
         if (loaf == null) loaf = attemptRead(cPos); // try and see if file already exists
-        if (loaf == null) loaf = scanChunk(cPos); // if not, just scan the chunk
+        //if (loaf == null) loaf = scanChunk(cPos); // if not, just scan the chunk
         if (loaf == null) return HazardLevel.UNKNOWN; // the chunk just isn't loaded yet.
 
         return loaf.chunkHazard()[pos.y + 64][pos.x & 0xF][pos.z & 0xF];
@@ -242,10 +245,6 @@ public class Bakery {
 
     public boolean isHazardous(BetterBlockPos pos) {
         return getHazardLevel(pos).ordinal() > 2;
-    }
-
-    public MinecraftServer getServer() {
-        return level.getServer();
     }
 
     @Override

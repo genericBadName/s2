@@ -18,6 +18,13 @@ public class ModBlockTagDataProvider extends FabricTagProvider<Block> {
     @Override
     protected void addTags(HolderLookup.Provider arg) {
         getOrCreateTagBuilder(ModBlockTags.PASSABLE)
-                .add(Blocks.AIR);
+                .add(Blocks.AIR)
+                .add(Blocks.GRASS)
+                .add(Blocks.SNOW);
+
+        getOrCreateTagBuilder(ModBlockTags.WALKABLE)
+                .add(Blocks.STONE)
+                .add(Blocks.GRASS)
+                .add(Blocks.SNOW_BLOCK);
     }
 }

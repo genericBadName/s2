@@ -6,6 +6,7 @@
   "mixins": [
     "chunk.MixinBakeOnUpdate",
     "chunk.MixinBakeryState",
+    "entity.EntityAccessor",
     "entity.MixinS2Mob",
     "entity.MixinSmartZombie"
   ],

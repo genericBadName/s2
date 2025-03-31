@@ -12,14 +12,15 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
-public class GetToBlockGoal<M extends Mob & S2SmartMob> extends Goal {
+public class S2GetToBlockGoal<M extends Mob & S2SmartMob> extends Goal {
     private final M mob;
     private final S2Node target;
     private List<S2Node> path;
     private S2Node walkingTo;
 
-    public GetToBlockGoal(M mob, BetterBlockPos target) {
+    public S2GetToBlockGoal(M mob, BetterBlockPos target) {
         this.mob = mob;
         this.target = new S2Node(target, Moves.START);
 
@@ -41,17 +42,17 @@ public class GetToBlockGoal<M extends Mob & S2SmartMob> extends Goal {
 
     @Override
     public void start() {
-        S2Path potentialPath = null;
         try {
-            potentialPath = mob.calculateFromCurrentLocation(target.getPos());
+            CompletableFuture<Void> pathFuture = mob.s2$calculateFromCurrentLocation(target.getPos());
+
+            pathFuture.thenRun(() -> {
+                if (mob.s2$getPotentialPath() == null) return;
+                path = mob.s2$getPotentialPath().getNodes();
+                walkingTo = path.get(0);
+            });
         } catch (IOException e) {
             S2Lib.LOGGER.error("Entity {} could not access its level.", mob.getUUID());
         }
-
-        if (potentialPath == null) return;
-
-        this.path = potentialPath.getNodes();
-        walkingTo = path.get(0);
     }
 
     @Override

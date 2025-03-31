@@ -4,9 +4,10 @@ import com.genericbadname.s2lib.pathing.BetterBlockPos;
 import com.genericbadname.s2lib.pathing.S2Path;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 public interface S2SmartMob {
-    void updatePath();
-    S2Path getPotentialPath();
-    S2Path calculateFromCurrentLocation(BetterBlockPos dest) throws IOException;
+    void s2$updatePath();
+    S2Path s2$getPotentialPath();
+    CompletableFuture<Void> s2$calculateFromCurrentLocation(BetterBlockPos dest) throws IOException;
 }

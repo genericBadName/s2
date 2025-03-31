@@ -30,7 +30,7 @@ public class BakeryCommand {
 
                                     ChunkPos posC = player.chunkPosition();
 
-                                    src.getServer().getBakery(src.getLevel().dimension()).scanChunk(posC);
+                                    src.getServer().getBakery(src.getLevel().dimension()).scanChunk(src.getLevel(), posC);
                                     src.sendSystemMessage(Component.literal("Scanned chunk (" + posC.x + ", " + posC.z + ")"));
                                     return 1;
                                 })

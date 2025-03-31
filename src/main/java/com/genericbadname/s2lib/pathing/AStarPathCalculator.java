@@ -63,7 +63,7 @@ public class AStarPathCalculator {
         reset();
 
         S2Lib.logInfo("Starting pathfinder from {} to {} in {}", startPos, endPos, bakery);
-        if (startPos == null || endPos == null) return null;
+        if (startPos == null || endPos == null || bakery == null) return null;
 
         startTime = System.currentTimeMillis();
         int numNodes = 1;
@@ -94,7 +94,7 @@ public class AStarPathCalculator {
                     // check if neighbor is valid, otherwise skip node
                     // TODO: possibly cache this result in the bakery for faster lookup?
                     PositionValidity validity = move.positionValidator.apply(bakery, neighborPos);
-                    if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, validity == PositionValidity.SUCCESS), bakery.getServer());
+                    //if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) {S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, validity == PositionValidity.SUCCESS), bakery.getServer());
 
                     if (validity != PositionValidity.SUCCESS) {
                         if (validity == move.stopCondition) break;
@@ -124,7 +124,7 @@ public class AStarPathCalculator {
                         }
 
                         // for debug :)
-                        if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, true), bakery.getServer());
+                        //if (CommonConfig.DEBUG_PATH_CALCULATIONS.get()) S2NetworkingUtil.dispatchAll(S2NetworkingConstants.RENDER_NODE_UPDATE, RenderNodeUpdateS2CPacket.create(neighborPos, true), bakery.getServer());
                     }
                 }
             }
